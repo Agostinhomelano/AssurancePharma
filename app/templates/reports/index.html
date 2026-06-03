@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% block title %}Rapports - AssurancePharma{% endblock %}
+{% block content %}
+<div class="fade-in">
+  <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+    <h1 class="page-title mb-0"><i class="fas fa-file-excel"></i> Rapports</h1>
+  </div>
+
+  <div class="row g-2 g-md-3 mb-3">
+    <div class="col-md-6">
+      <div class="card">
+        <div class="card-header"><i class="fas fa-calendar-day"></i> Rapport Journalier</div>
+        <div class="card-body">
+          <p class="text-muted small">Générer le rapport de fin de journée.</p>
+          <form method="POST" action="{{ url_for('reports.generate_daily') }}" class="row g-2">
+            <div class="col-7">
+              <input type="date" class="form-control" name="date" value="{{ today }}" />
+            </div>
+            <div class="col-5">
+              <button type="submit" class="btn btn-primary w-100 btn-sm">
+                <i class="fas fa-file-export"></i> Générer
+              </button>
+            </div>
+          </form>
+          <a href="{{ url_for('reports.download_today') }}" class="btn btn-success btn-sm w-100 mt-2">
+            <i class="fas fa-download"></i> Télécharger aujourd'hui
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-6">
+      <div class="card">
+        <div class="card-header"><i class="fas fa-calendar-alt"></i> Rapport Périodique</div>
+        <div class="card-body">
+          <p class="text-muted small">Rapport pour une période spécifique.</p>
+          <form method="POST" action="{{ url_for('reports.generate_period') }}" class="row g-2">
+            <div class="col-5">
+              <input type="date" class="form-control" name="start_date" required />
+            </div>
+            <div class="col-5">
+              <input type="date" class="form-control" name="end_date" required />
+            </div>
+            <div class="col-2">
+              <button type="submit" class="btn btn-primary w-100 btn-sm h-100">
+                <i class="fas fa-file-export"></i>
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header"><i class="fas fa-history"></i> Rapports générés</div>
+    <div class="card-body p-0 p-md-3">
+      {% if reports %}
+      <div class="table-responsive">
+        <table class="table mb-0">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Ventes</th>
+              <th>Montant</th>
+              <th>Bénéfice</th>
+              <th class="d-none d-sm-table-cell">Stock</th>
+              <th class="d-none d-sm-table-cell">Exp.</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for report in reports %}
+            <tr>
+              <td>{{ report.date.strftime('%d/%m/%Y') }}</td>
+              <td>{{ report.total_sales }}</td>
+              <td>{{ "%.0f"|format(report.total_amount) }}</td>
+              <td><span class="badge bg-success">{{ "%.0f"|format(report.total_profit) }}</span></td>
+              <td class="d-none d-sm-table-cell"><span class="badge {% if report.medicines_out_of_stock > 0 %}bg-danger{% else %}bg-success{% endif %}">{{ report.medicines_out_of_stock }}</span></td>
+              <td class="d-none d-sm-table-cell"><span class="badge {% if report.medicines_expiring > 0 %}bg-warning{% else %}bg-success{% endif %}">{{ report.medicines_expiring }}</span></td>
+              <td>
+                <a href="{{ url_for('reports.download_daily', report_id=report.id) }}" class="btn btn-sm btn-success">
+                  <i class="fas fa-download"></i>
+                </a>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <p class="text-muted text-center mb-0 py-3">Aucun rapport généré.</p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

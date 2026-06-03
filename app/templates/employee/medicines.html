@@ -1,0 +1,193 @@
+{% extends "base.html" %}
+{% block title %}Médicaments - AssurancePharma{% endblock %}
+{% block content %}
+<div class="fade-in">
+  <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+    <h4 class="page-title mb-0"><i class="fas fa-pills"></i> Médicaments</h4>
+    <div class="d-flex gap-2">
+      <button class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#addMedicineModal">
+        <i class="fas fa-plus"></i> Ajouter
+      </button>
+      <a href="{{ url_for('employee.index') }}" class="btn btn-outline-secondary btn-sm">
+        <i class="fas fa-arrow-left"></i> Retour
+      </a>
+    </div>
+  </div>
+
+  <div class="row g-2 g-md-3 mb-3">
+    <div class="col-md-8">
+      <div class="card">
+        <div class="card-header"><i class="fas fa-list"></i> Inventaire</div>
+        <div class="card-body p-0">
+          <div class="table-responsive" style="max-height: 480px; overflow-y: auto;">
+            <table class="table mb-0">
+              <thead>
+                <tr>
+                  <th>Nom</th>
+                  <th class="d-none d-sm-table-cell">Catégorie</th>
+                  <th>Stock</th>
+                  <th>Prix vente</th>
+                  <th>Statut</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for m in medicines %}
+                <tr>
+                  <td class="small fw-medium">{{ m.nom }}</td>
+                  <td class="d-none d-sm-table-cell small">{{ m.categorie }}</td>
+                  <td>
+                    <span class="badge {% if m.quantite <= 0 %}bg-dark{% elif m.stock_faible %}bg-danger{% else %}bg-success{% endif %}">
+                      {{ m.quantite }}
+                    </span>
+                  </td>
+                  <td class="small">{{ "%.0f"|format(m.prix_vente) }} F</td>
+                  <td>
+                    {% if m.quantite <= 0 %}
+                    <span class="badge bg-dark">Rupture</span>
+                    {% elif m.stock_faible %}
+                    <span class="badge bg-warning text-dark">Faible</span>
+                    {% else %}
+                    <span class="badge bg-success">Disponible</span>
+                    {% endif %}
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card sticky-md-top" style="top: 70px;">
+        <div class="card-header"><i class="fas fa-search"></i> Filtres</div>
+        <div class="card-body">
+          <div class="mb-3">
+            <label class="form-label">Rechercher</label>
+            <input type="text" class="form-control form-control-sm" id="searchMed" placeholder="Nom..." onkeyup="filterMedicines(this.value)">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Catégorie</label>
+            <select class="form-select form-select-sm" id="categoryFilter" onchange="filterMedicines(document.getElementById('searchMed').value)">
+              <option value="">Toutes</option>
+              {% for cat in medicines|map(attribute='categorie')|unique %}
+              <option value="{{ cat }}">{{ cat }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Stock</label>
+            <select class="form-select form-select-sm" id="stockFilter" onchange="filterMedicines(document.getElementById('searchMed').value)">
+              <option value="">Tous</option>
+              <option value="faible">Stock faible</option>
+              <option value="rupture">Rupture</option>
+              <option value="disponible">Disponible</option>
+            </select>
+          </div>
+          <hr>
+          <div class="d-flex justify-content-between small">
+            <span class="text-muted">Total:</span>
+            <strong>{{ medicines|length }} médicaments</strong>
+          </div>
+          <button class="btn btn-success btn-sm w-100 mt-2" data-bs-toggle="modal" data-bs-target="#addMedicineModal">
+            <i class="fas fa-plus"></i> Ajouter un médicament
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Add Medicine Modal -->
+<div class="modal fade" id="addMedicineModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header bg-success text-white">
+        <h6 class="modal-title"><i class="fas fa-plus"></i> Ajouter un médicament</h6>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <form method="POST" action="{{ url_for('medicines.api_create_medicine') }}" id="addMedicineForm">
+        <div class="modal-body">
+          <div class="mb-2">
+            <label class="form-label">Nom</label>
+            <input type="text" name="nom" class="form-control form-control-sm" required>
+          </div>
+          <div class="row g-2 mb-2">
+            <div class="col-6">
+              <label class="form-label">Catégorie</label>
+              <select name="categorie" class="form-select form-select-sm" required>
+                <option value="">Choisir...</option>
+                <option>Antalgique</option>
+                <option>Antibiotique</option>
+                <option>Anti-inflammatoire</option>
+                <option>Vitamine</option>
+                <option>Cardiologique</option>
+                <option>Digestif</option>
+                <option>Dermatologique</option>
+                <option>Autre</option>
+              </select>
+            </div>
+            <div class="col-6">
+              <label class="form-label">Code barre</label>
+              <input type="text" name="code_barre" class="form-control form-control-sm">
+            </div>
+          </div>
+          <div class="row g-2 mb-2">
+            <div class="col-4">
+              <label class="form-label">Prix achat</label>
+              <input type="number" name="prix_achat" class="form-control form-control-sm" step="0.01" required>
+            </div>
+            <div class="col-4">
+              <label class="form-label">Prix vente</label>
+              <input type="number" name="prix_vente" class="form-control form-control-sm" step="0.01" required>
+            </div>
+            <div class="col-4">
+              <label class="form-label">Quantité</label>
+              <input type="number" name="quantite" class="form-control form-control-sm" value="0">
+            </div>
+          </div>
+          <div class="row g-2 mb-2">
+            <div class="col-6">
+              <label class="form-label">Stock minimum</label>
+              <input type="number" name="stock_minimum" class="form-control form-control-sm" value="10">
+            </div>
+            <div class="col-6">
+              <label class="form-label">Date expiration</label>
+              <input type="date" name="date_expiration" class="form-control form-control-sm">
+            </div>
+          </div>
+          <div class="mb-2">
+            <label class="form-label">Description</label>
+            <textarea name="description" class="form-control form-control-sm" rows="2"></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Annuler</button>
+          <button type="submit" class="btn btn-success btn-sm"><i class="fas fa-save"></i> Enregistrer</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+function filterMedicines(query) {
+  const q = query.toLowerCase();
+  const cat = document.getElementById('categoryFilter').value;
+  const stock = document.getElementById('stockFilter').value;
+  document.querySelectorAll('tbody tr').forEach(r => {
+    const name = r.cells[0].textContent.toLowerCase();
+    const categ = r.cells[1] ? r.cells[1].textContent : '';
+    const stockBadge = r.cells[4] ? r.cells[4].textContent.trim() : '';
+    let show = true;
+    if (q && !name.includes(q)) show = false;
+    if (cat && categ !== cat) show = false;
+    if (stock === 'faible' && stockBadge !== 'Faible') show = false;
+    if (stock === 'rupture' && stockBadge !== 'Rupture') show = false;
+    if (stock === 'disponible' && stockBadge !== 'Disponible') show = false;
+    r.style.display = show ? '' : 'none';
+  });
+}
+</script>
+{% endblock %}

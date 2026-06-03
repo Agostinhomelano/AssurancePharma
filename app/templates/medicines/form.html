@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block title %}{% if medicine %}Modifier{% else %}Nouveau{% endif %} Médicament{% endblock %}
+{% block content %}
+<div class="fade-in">
+  <h1 class="page-title">
+    <i class="fas fa-{% if medicine %}edit{% else %}plus{% endif %}"></i>
+    {% if medicine %}Modifier{% else %}Nouveau{% endif %} Médicament
+  </h1>
+
+  <div class="card">
+    <div class="card-body">
+      <form method="POST">
+        <div class="row g-2 g-md-3">
+          <div class="col-12 col-md-6">
+            <label class="form-label">Nom *</label>
+            <input type="text" class="form-control" name="nom" value="{{ medicine.nom if medicine else '' }}" required />
+          </div>
+          <div class="col-12 col-md-6">
+            <label class="form-label">Catégorie *</label>
+            <select class="form-select" name="categorie" required>
+              <option value="">Sélectionner...</option>
+              {% for cat in ['Antalgiques','Antibiotiques','Anti-inflammatoires','Vitamines','Cardiovasculaires','Digestifs','Respiratoires','Dermatologiques','Autres'] %}
+              <option value="{{ cat }}" {% if medicine and medicine.categorie == cat %}selected{% endif %}>{{ cat }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-12">
+            <label class="form-label">Description</label>
+            <textarea class="form-control" name="description" rows="2">{{ medicine.description if medicine else '' }}</textarea>
+          </div>
+          <div class="col-6 col-md-3">
+            <label class="form-label">Prix achat *</label>
+            <input type="number" step="0.01" class="form-control" name="prix_achat" value="{{ medicine.prix_achat if medicine else '' }}" required />
+          </div>
+          <div class="col-6 col-md-3">
+            <label class="form-label">Prix vente *</label>
+            <input type="number" step="0.01" class="form-control" name="prix_vente" value="{{ medicine.prix_vente if medicine else '' }}" required />
+          </div>
+          <div class="col-6 col-md-3">
+            <label class="form-label">Quantité *</label>
+            <input type="number" class="form-control" name="quantite" value="{{ medicine.quantite if medicine else '0' }}" required />
+          </div>
+          <div class="col-6 col-md-3">
+            <label class="form-label">Stock min</label>
+            <input type="number" class="form-control" name="stock_minimum" value="{{ medicine.stock_minimum if medicine else '10' }}" />
+          </div>
+          <div class="col-6 col-md-4">
+            <label class="form-label">Code barre</label>
+            <input type="text" class="form-control" name="code_barre" value="{{ medicine.code_barre if medicine else '' }}" />
+          </div>
+          <div class="col-6 col-md-4">
+            <label class="form-label">Expiration</label>
+            <input type="date" class="form-control" name="date_expiration" value="{{ medicine.date_expiration.strftime('%Y-%m-%d') if medicine and medicine.date_expiration else '' }}" />
+          </div>
+          <div class="col-12 col-md-4">
+            <label class="form-label">Fournisseur</label>
+            <select class="form-select" name="fournisseur_id">
+              <option value="">Aucun</option>
+              {% for s in suppliers %}
+              <option value="{{ s.id }}" {% if medicine and medicine.fournisseur_id == s.id %}selected{% endif %}>{{ s.nom }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-12 mt-3">
+            <button type="submit" class="btn btn-primary">
+              <i class="fas fa-{% if medicine %}save{% else %}plus{% endif %}"></i>
+              {% if medicine %}Enregistrer{% else %}Créer{% endif %}
+            </button>
+            <a href="{{ url_for('medicines.list_medicines') }}" class="btn btn-secondary">Annuler</a>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

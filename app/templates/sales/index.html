@@ -1,0 +1,147 @@
+{% extends "base.html" %}
+{% block title %}Ventes - AssurancePharma{% endblock %}
+{% block content %}
+<div class="fade-in">
+  <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+    <h1 class="page-title mb-0"><i class="fas fa-shopping-cart"></i> Interface de vente</h1>
+    <a href="{% if current_user.role is defined and current_user.role == 'gerant' %}{{ url_for('dashboard.index') }}{% else %}{{ url_for('employee.index') }}{% endif %}" class="btn btn-outline-secondary btn-sm">
+      <i class="fas fa-arrow-left"></i> Retour
+    </a>
+  </div>
+
+  <div class="row g-2 g-md-3">
+    <div class="col-md-8">
+      <div class="card">
+        <div class="card-header"><i class="fas fa-search"></i> Rechercher</div>
+        <div class="card-body p-2 p-md-3">
+          <div class="mb-2">
+            <input type="text" class="form-control" id="searchMedicine" placeholder="Nom ou code barre..." oninput="filterMedicines(this.value)" />
+          </div>
+          <div class="table-responsive" style="max-height: 350px; overflow-y: auto;">
+            <table class="table table-sm mb-0" id="medicinesTable">
+              <thead>
+                <tr>
+                  <th>Médicament</th>
+                  <th>Prix</th>
+                  <th>Stock</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for med in medicines %}
+                <tr class="medicine-row" data-name="{{ med.nom|lower }}" data-barcode="{{ med.code_barre|lower if med.code_barre else '' }}">
+                  <td class="small">{{ med.nom }}</td>
+                  <td class="small">{{ "%.0f"|format(med.prix_vente) }}</td>
+                  <td>
+                    <span class="badge {% if med.quantite <= 0 %}bg-danger{% elif med.stock_faible %}bg-warning{% else %}bg-success{% endif %}">
+                      {{ med.quantite }}
+                    </span>
+                  </td>
+                  <td>
+                    {% if med.quantite > 0 %}
+                    <button class="btn btn-sm btn-primary py-0 px-2" onclick="addToCart({{ med.id }}, '{{ med.nom|e }}', {{ med.prix_vente }})">
+                      <i class="fas fa-cart-plus"></i>
+                    </button>
+                    {% endif %}
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <div class="card sticky-md-top" style="top: 70px;">
+        <div class="card-header"><i class="fas fa-shopping-cart"></i> Panier</div>
+        <div class="card-body p-2 p-md-3">
+          <div id="cartItems" style="max-height: 250px; overflow-y: auto;">
+            <p class="text-muted text-center mb-0 small">Panier vide</p>
+          </div>
+          <hr class="my-2" />
+          <div class="d-flex justify-content-between small">
+            <strong>Total:</strong>
+            <strong id="cartTotal">0 FCFA</strong>
+          </div>
+          <hr class="my-2" />
+          <select class="form-select form-select-sm mb-2" id="paymentMethod">
+            <option value="Espèces">Espèces</option>
+            <option value="Mobile Money">Mobile Money</option>
+            <option value="Carte">Carte</option>
+          </select>
+          <button class="btn btn-success w-100 btn-sm" onclick="checkout()" id="checkoutBtn" disabled>
+            <i class="fas fa-check"></i> Valider
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  let cart = [];
+  function filterMedicines(q) {
+    q = q.toLowerCase();
+    document.querySelectorAll('.medicine-row').forEach(r => {
+      r.style.display = (r.dataset.name.includes(q) || r.dataset.barcode.includes(q)) ? '' : 'none';
+    });
+  }
+  function addToCart(id, name, price) {
+    const e = cart.find(i => i.id === id);
+    e ? e.quantity++ : cart.push({id, name, price, quantity: 1});
+    renderCart();
+  }
+  function updateQty(id, d) {
+    const i = cart.find(x => x.id === id);
+    if (i) { i.quantity = Math.max(1, i.quantity + d); renderCart(); }
+  }
+  function removeFromCart(id) {
+    cart = cart.filter(i => i.id !== id);
+    renderCart();
+  }
+  function renderCart() {
+    const c = document.getElementById('cartItems');
+    const t = cart.reduce((s, i) => s + i.price * i.quantity, 0);
+    if (!cart.length) {
+      c.innerHTML = '<p class="text-muted text-center mb-0 small">Panier vide</p>';
+      document.getElementById('checkoutBtn').disabled = true;
+    } else {
+      c.innerHTML = cart.map(i => `
+        <div class="d-flex justify-content-between align-items-center mb-1 p-1 bg-light rounded small">
+          <div class="flex-grow-1 me-1">
+            <strong class="small">${i.name}</strong><br>
+            <span class="small">${i.price} x ${i.quantity}</span>
+          </div>
+          <div class="text-end flex-shrink-0">
+            <strong class="small">${(i.price*i.quantity).toFixed(0)}</strong><br>
+            <div class="action-group justify-content-end">
+              <button class="btn btn-outline-secondary btn-action" onclick="updateQty(${i.id},-1)">-</button>
+              <button class="btn btn-outline-secondary btn-action" onclick="updateQty(${i.id},1)">+</button>
+              <button class="btn btn-outline-danger btn-action" onclick="removeFromCart(${i.id})"><i class="fas fa-trash"></i></button>
+            </div>
+          </div>
+        </div>
+      `).join('');
+      document.getElementById('checkoutBtn').disabled = false;
+    }
+    document.getElementById('cartTotal').textContent = t.toFixed(0) + ' FCFA';
+  }
+  function checkout() {
+    if (!cart.length) return;
+    const btn = document.getElementById('checkoutBtn');
+    btn.disabled = true; btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+    fetch('{{ url_for("sales.api_create_sale") }}', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({items: cart.map(i=>({medicine_id:i.id, quantity:i.quantity})), payment_method: document.getElementById('paymentMethod').value})
+    }).then(r=>r.json()).then(d=>{
+      if (d.success) { alert('Vente enregistrée !'); cart=[]; renderCart(); location.reload(); }
+      else alert('Erreur: '+d.error);
+    }).catch(e=>alert('Erreur: '+e.message)).finally(()=>{
+      btn.disabled=false; btn.innerHTML='<i class="fas fa-check"></i> Valider';
+    });
+  }
+</script>
+{% endblock %}

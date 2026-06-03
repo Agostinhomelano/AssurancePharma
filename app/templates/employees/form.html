@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}{% if employee %}Modifier{% else %}Nouvel{% endif %} Employé{% endblock %}
+{% block content %}
+<div class="fade-in">
+  <h1 class="page-title">
+    <i class="fas fa-{% if employee %}edit{% else %}plus{% endif %}"></i>
+    {% if employee %}Modifier{% else %}Nouvel{% endif %} Employé
+  </h1>
+
+  <div class="card">
+    <div class="card-body">
+      <form method="POST">
+        <div class="row g-2 g-md-3">
+          <div class="col-6 col-md-4">
+            <label class="form-label">Nom *</label>
+            <input type="text" class="form-control" name="nom" value="{{ employee.nom if employee else '' }}" required />
+          </div>
+          <div class="col-6 col-md-4">
+            <label class="form-label">Prénom *</label>
+            <input type="text" class="form-control" name="prenom" value="{{ employee.prenom if employee else '' }}" required />
+          </div>
+          <div class="col-12 col-md-4">
+            <label class="form-label">Postnom</label>
+            <input type="text" class="form-control" name="postnom" value="{{ employee.postnom if employee else '' }}" />
+          </div>
+          <div class="col-6 col-md-4">
+            <label class="form-label">Email *</label>
+            <input type="email" class="form-control" name="email" value="{{ employee.email if employee else '' }}" required />
+          </div>
+          <div class="col-6 col-md-4">
+            <label class="form-label">Téléphone</label>
+            <input type="text" class="form-control" name="telephone" value="{{ employee.telephone if employee else '' }}" />
+          </div>
+          <div class="col-12 col-md-4">
+            <label class="form-label">Fonction *</label>
+            <select class="form-select" name="fonction" required>
+              <option value="">Sélectionner...</option>
+              {% for f in ['Vendeur','Caissier','Pharmacien','Stagiaire','Autre'] %}
+              <option value="{{ f }}" {% if employee and employee.fonction == f %}selected{% endif %}>{{ f }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-12 col-md-6">
+            <label class="form-label">{% if employee %}Nouveau mot de passe{% else %}Mot de passe *{% endif %}</label>
+            <input type="password" class="form-control" name="password" {% if not employee %}required{% endif %} />
+          </div>
+          {% if employee %}
+          <div class="col-12 col-md-6 d-flex align-items-end">
+            <div class="form-check">
+              <input type="checkbox" class="form-check-input" name="actif" id="actif" {% if employee.actif %}checked{% endif %} />
+              <label class="form-check-label" for="actif">Compte actif</label>
+            </div>
+          </div>
+          {% endif %}
+          <div class="col-12 mt-2">
+            <button type="submit" class="btn btn-primary">
+              <i class="fas fa-{% if employee %}save{% else %}plus{% endif %}"></i>
+              {% if employee %}Enregistrer{% else %}Créer{% endif %}
+            </button>
+            <a href="{{ url_for('employees.list_employees') }}" class="btn btn-secondary">Annuler</a>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

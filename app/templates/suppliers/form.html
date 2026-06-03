@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}{% if supplier %}Modifier{% else %}Nouveau{% endif %} Fournisseur{% endblock %}
+{% block content %}
+<div class="fade-in">
+  <h1 class="page-title">
+    <i class="fas fa-{% if supplier %}edit{% else %}plus{% endif %}"></i>
+    {% if supplier %}Modifier{% else %}Nouveau{% endif %} Fournisseur
+  </h1>
+
+  <div class="card">
+    <div class="card-body">
+      <form method="POST">
+        <div class="row g-2 g-md-3">
+          <div class="col-12 col-md-6">
+            <label class="form-label">Nom *</label>
+            <input type="text" class="form-control" name="nom" value="{{ supplier.nom if supplier else '' }}" required />
+          </div>
+          <div class="col-12 col-md-6">
+            <label class="form-label">Responsable</label>
+            <input type="text" class="form-control" name="responsable" value="{{ supplier.responsable if supplier else '' }}" />
+          </div>
+          <div class="col-6 col-md-6">
+            <label class="form-label">Téléphone</label>
+            <input type="text" class="form-control" name="telephone" value="{{ supplier.telephone if supplier else '' }}" />
+          </div>
+          <div class="col-6 col-md-6">
+            <label class="form-label">Email</label>
+            <input type="email" class="form-control" name="email" value="{{ supplier.email if supplier else '' }}" />
+          </div>
+          <div class="col-12">
+            <label class="form-label">Adresse</label>
+            <textarea class="form-control" name="adresse" rows="2">{{ supplier.adresse if supplier else '' }}</textarea>
+          </div>
+          <div class="col-12 mt-2">
+            <button type="submit" class="btn btn-primary">
+              <i class="fas fa-{% if supplier %}save{% else %}plus{% endif %}"></i>
+              {% if supplier %}Enregistrer{% else %}Créer{% endif %}
+            </button>
+            <a href="{{ url_for('suppliers.list_suppliers') }}" class="btn btn-secondary">Annuler</a>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

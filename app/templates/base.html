@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="theme-color" content="#198754" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="Pharma" />
+    <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}" />
+    <link rel="icon" href="{{ url_for('static', filename='icons/icon-192.svg') }}" sizes="192x192" />
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='icons/icon-192.svg') }}" />
+    <title>{% block title %}AssurancePharma{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+    {% block extra_css %}{% endblock %}
+  </head>
+  <body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+      <div class="container-fluid">
+        {% if current_user.is_authenticated %}
+        <button class="menu-btn d-lg-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#mobileSidebar">
+          <i class="fas fa-bars"></i>
+        </button>
+        {% endif %}
+        <a class="navbar-brand" href="{% if current_user.is_authenticated %}{% if current_user.role is defined and current_user.role == 'gerant' %}{{ url_for('dashboard.index') }}{% else %}{{ url_for('employee.index') }}{% endif %}{% else %}{{ url_for('auth.login') }}{% endif %}">
+          <span class="logo-icon"><i class="fas fa-mortar-pestle"></i></span>
+          <span class="brand-text">AssurancePharma</span>
+        </a>
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav ms-auto align-items-center">
+            {% if current_user.is_authenticated %}
+            <li class="nav-item">
+              <span class="nav-link user-badge">
+                <i class="fas fa-user-circle"></i>
+                <span class="d-none d-md-inline">{{ current_user.prenom }} {{ current_user.nom }}</span>
+              </span>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{{ url_for('auth.logout') }}"><i class="fas fa-sign-out-alt"></i> <span class="d-none d-md-inline">Déconnexion</span></a>
+            </li>
+            {% endif %}
+          </ul>
+        </div>
+        {% if current_user.is_authenticated %}
+        <a class="nav-link text-white d-lg-none p-0 ms-2 logout-mobile" href="{{ url_for('auth.logout') }}">
+          <i class="fas fa-sign-out-alt"></i>
+        </a>
+        {% endif %}
+      </div>
+    </nav>
+
+    <!-- MOBILE: Offcanvas Sidebar -->
+    {% if current_user.is_authenticated %}
+    <div class="offcanvas offcanvas-start offcanvas-sidebar" tabindex="-1" id="mobileSidebar">
+      <div class="offcanvas-header border-bottom border-secondary">
+        <h5 class="offcanvas-title text-white">
+          <span class="logo-icon"><i class="fas fa-mortar-pestle"></i></span> Menu
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas"></button>
+      </div>
+      <div class="offcanvas-body p-0">
+        <div class="sidebar-user text-center py-3 border-bottom border-secondary">
+          <i class="fas fa-user-circle fa-3x mb-2" style="color:var(--primary);"></i>
+          <h6 class="text-white mb-0">{{ current_user.prenom }} {{ current_user.nom }}</h6>
+          <small class="text-muted">
+            {% if current_user.role is defined and current_user.role == 'gerant' %}
+              Gérant
+            {% else %}
+              {{ current_user.fonction }}
+            {% endif %}
+          </small>
+        </div>
+        <div class="sidebar-section">Navigation</div>
+
+        {% if current_user.role is defined and current_user.role == 'gerant' %}
+        <!-- Gerant menu -->
+        <a class="nav-link {% if request.endpoint == 'dashboard.index' %}active{% endif %}" href="{{ url_for('dashboard.index') }}" onclick="setTimeout(()=>{let b=document.querySelector('[data-bs-dismiss=offcanvas]');if(b)b.click()},100)"><i class="fas fa-home"></i> Dashboard</a>
+        <a class="nav-link {% if request.endpoint and request.endpoint.startswith('medicines.') %}active{% endif %}" href="{{ url_for('medicines.list_medicines') }}" onclick="setTimeout(()=>{let b=document.querySelector('[data-bs-dismiss=offcanvas]');if(b)b.click()},100)"><i class="fas fa-pills"></i> Médicaments</a>
+        <a class="nav-link {% if request.endpoint and request.endpoint.startswith('suppliers.') %}active{% endif %}" href="{{ url_for('suppliers.list_suppliers') }}" onclick="setTimeout(()=>{let b=document.querySelector('[data-bs-dismiss=offcanvas]');if(b)b.click()},100)"><i class="fas fa-truck"></i> Fournisseurs</a>
+        <a class="nav-link {% if request.endpoint and request.endpoint.startswith('sales.') %}active{% endif %}" href="{{ url_for('sales.list_sales') }}" onclick="setTimeout(()=>{let b=document.querySelector('[data-bs-dismiss=offcanvas]');if(b)b.click()},100)"><i class="fas fa-shopping-cart"></i> Ventes</a>
+        <div class="sidebar-section">Gestion</div>
+        <a class="nav-link {% if request.endpoint and request.endpoint.startswith('employees.') %}active{% endif %}" href="{{ url_for('employees.list_employees') }}" onclick="setTimeout(()=>{let b=document.querySelector('[data-bs-dismiss=offcanvas]');if(b)b.click()},100)"><i class="fas fa-users"></i> Employés</a>
+        <a class="nav-link {% if request.endpoint and request.endpoint.startswith('reports.') %}active{% endif %}" href="{{ url_for('reports.index') }}" onclick="setTimeout(()=>{let b=document.querySelector('[data-bs-dismiss=offcanvas]');if(b)b.click()},100)"><i class="fas fa-file-excel"></i> Rapports</a>
+        <a class="nav-link {% if request.endpoint and request.endpoint.startswith('activities.') %}active{% endif %}" href="{{ url_for('activities.list_activities') }}" onclick="setTimeout(()=>{let b=document.querySelector('[data-bs-dismiss=offcanvas]');if(b)b.click()},100)"><i class="fas fa-history"></i> Activités</a>
+        {% else %}
+        <!-- Employee menu -->
+        <a class="nav-link {% if request.endpoint == 'employee.index' %}active{% endif %}" href="{{ url_for('employee.index') }}" onclick="setTimeout(()=>{let b=document.querySelector('[data-bs-dismiss=offcanvas]');if(b)b.click()},100)"><i class="fas fa-home"></i> Accueil</a>
+        <a class="nav-link {% if request.endpoint == 'sales.sales_interface' %}active{% endif %}" href="{{ url_for('sales.sales_interface') }}" onclick="setTimeout(()=>{let b=document.querySelector('[data-bs-dismiss=offcanvas]');if(b)b.click()},100)"><i class="fas fa-shopping-cart"></i> Ventes</a>
+        <a class="nav-link {% if request.endpoint == 'employee.medicines' %}active{% endif %}" href="{{ url_for('employee.medicines') }}" onclick="setTimeout(()=>{let b=document.querySelector('[data-bs-dismiss=offcanvas]');if(b)b.click()},100)"><i class="fas fa-pills"></i> Médicaments</a>
+        <a class="nav-link {% if request.endpoint == 'employee.activities' %}active{% endif %}" href="{{ url_for('employee.activities') }}" onclick="setTimeout(()=>{let b=document.querySelector('[data-bs-dismiss=offcanvas]');if(b)b.click()},100)"><i class="fas fa-history"></i> Activités</a>
+        <div class="sidebar-section">Rapports</div>
+        <a class="nav-link {% if request.endpoint == 'employee.report' %}active{% endif %}" href="{{ url_for('employee.report') }}" onclick="setTimeout(()=>{let b=document.querySelector('[data-bs-dismiss=offcanvas]');if(b)b.click()},100)"><i class="fas fa-file-excel"></i> Rapport journalier</a>
+        {% endif %}
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- DESKTOP: Sidebar -->
+    {% if current_user.is_authenticated %}
+    <div class="app-layout">
+      <div class="sidebar desktop-only">
+        <div class="sidebar-user text-center py-3 border-bottom border-secondary">
+          <i class="fas fa-user-circle fa-3x mb-1" style="color:var(--primary);"></i>
+          <h6 class="text-white mb-0" style="font-size:0.85rem;">{{ current_user.prenom }} {{ current_user.nom }}</h6>
+          <small class="text-muted" style="font-size:0.7rem;">
+            {% if current_user.role is defined and current_user.role == 'gerant' %}
+              Gérant
+            {% else %}
+              {{ current_user.fonction }}
+            {% endif %}
+          </small>
+        </div>
+        <div class="sidebar-section">Navigation</div>
+
+        {% if current_user.role is defined and current_user.role == 'gerant' %}
+        <!-- Gerant sidebar -->
+        <a class="nav-link {% if request.endpoint == 'dashboard.index' %}active{% endif %}" href="{{ url_for('dashboard.index') }}"><i class="fas fa-home"></i> Dashboard</a>
+        <a class="nav-link {% if request.endpoint and request.endpoint.startswith('medicines.') %}active{% endif %}" href="{{ url_for('medicines.list_medicines') }}"><i class="fas fa-pills"></i> Médicaments</a>
+        <a class="nav-link {% if request.endpoint and request.endpoint.startswith('suppliers.') %}active{% endif %}" href="{{ url_for('suppliers.list_suppliers') }}"><i class="fas fa-truck"></i> Fournisseurs</a>
+        <a class="nav-link {% if request.endpoint and request.endpoint.startswith('sales.') %}active{% endif %}" href="{{ url_for('sales.list_sales') }}"><i class="fas fa-shopping-cart"></i> Ventes</a>
+        <div class="sidebar-section">Gestion</div>
+        <a class="nav-link {% if request.endpoint and request.endpoint.startswith('employees.') %}active{% endif %}" href="{{ url_for('employees.list_employees') }}"><i class="fas fa-users"></i> Employés</a>
+        <a class="nav-link {% if request.endpoint and request.endpoint.startswith('reports.') %}active{% endif %}" href="{{ url_for('reports.index') }}"><i class="fas fa-file-excel"></i> Rapports</a>
+        <a class="nav-link {% if request.endpoint and request.endpoint.startswith('activities.') %}active{% endif %}" href="{{ url_for('activities.list_activities') }}"><i class="fas fa-history"></i> Activités</a>
+        {% else %}
+        <!-- Employee sidebar -->
+        <a class="nav-link {% if request.endpoint == 'employee.index' %}active{% endif %}" href="{{ url_for('employee.index') }}"><i class="fas fa-home"></i> Accueil</a>
+        <a class="nav-link {% if request.endpoint == 'sales.sales_interface' %}active{% endif %}" href="{{ url_for('sales.sales_interface') }}"><i class="fas fa-shopping-cart"></i> Ventes</a>
+        <a class="nav-link {% if request.endpoint == 'employee.medicines' %}active{% endif %}" href="{{ url_for('employee.medicines') }}"><i class="fas fa-pills"></i> Médicaments</a>
+        <a class="nav-link {% if request.endpoint == 'employee.activities' %}active{% endif %}" href="{{ url_for('employee.activities') }}"><i class="fas fa-history"></i> Activités</a>
+        <div class="sidebar-section">Rapports</div>
+        <a class="nav-link {% if request.endpoint == 'employee.report' %}active{% endif %}" href="{{ url_for('employee.report') }}"><i class="fas fa-file-excel"></i> Rapport journalier</a>
+        {% endif %}
+      </div>
+      <div class="main-content">
+    {% else %}
+    <div class="container-fluid px-0">
+    {% endif %}
+
+      {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+      {% for category, message in messages %}
+      <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show py-2 mx-2 mt-2" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close py-2" data-bs-dismiss="alert"></button>
+      </div>
+      {% endfor %}
+      {% endif %}
+      {% endwith %}
+      {% block content %}{% endblock %}
+
+    {% if current_user.is_authenticated %}
+      </div> <!-- /main-content -->
+    </div> <!-- /app-layout -->
+    {% else %}
+    </div>
+    {% endif %}
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    {% block extra_js %}{% endblock %}
+    <script>
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('{{ url_for('static', filename='sw.js') }}')
+          .then(function() { console.log('SW enregistré'); })
+          .catch(function(err) { console.log('SW erreur:', err); });
+      }
+    </script>
+  </body>
+</html>

@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% block title %}Rapport - AssurancePharma{% endblock %}
+{% block content %}
+<div class="fade-in">
+  <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+    <h4 class="page-title mb-0"><i class="fas fa-file-excel"></i> Rapport journalier</h4>
+    <a href="{{ url_for('employee.index') }}" class="btn btn-outline-secondary btn-sm">
+      <i class="fas fa-arrow-left"></i> Retour
+    </a>
+  </div>
+
+  <div class="row g-2 g-md-3 mb-3">
+    <div class="col-6 col-md-3">
+      <div class="stat-card">
+        <div class="stat-icon bg-success"><i class="fas fa-shopping-cart"></i></div>
+        <h3>{{ stats.sales_count }}</h3>
+        <h6>Ventes</h6>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="stat-card">
+        <div class="stat-icon bg-info"><i class="fas fa-money-bill-wave"></i></div>
+        <h3>{{ "%.0f"|format(stats.total_amount) }} F</h3>
+        <h6>Montant</h6>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="stat-card">
+        <div class="stat-icon bg-secondary"><i class="fas fa-coins"></i></div>
+        <h3>{{ "%.0f"|format(stats.total_cost) }} F</h3>
+        <h6>Coût total</h6>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="stat-card">
+        <div class="stat-icon bg-warning"><i class="fas fa-gem"></i></div>
+        <h3>{{ "%.0f"|format(stats.total_profit) }} F</h3>
+        <h6>Bénéfice</h6>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header"><i class="fas fa-file-download"></i> Télécharger le rapport</div>
+    <div class="card-body">
+      <p class="text-muted small mb-3">
+        Générez le rapport Excel complet du jour avec le détail de toutes vos ventes,
+        les montants et les bénéfices.
+      </p>
+      <a href="{{ url_for('employee.download_report') }}" class="btn btn-success">
+        <i class="fas fa-download"></i> Télécharger le rapport Excel
+      </a>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header"><i class="fas fa-info-circle"></i> Résumé du jour</div>
+    <div class="card-body">
+      <div class="row g-2">
+        <div class="col-sm-6">
+          <div class="d-flex justify-content-between py-1 border-bottom small">
+            <span class="text-muted">Date</span>
+            <strong>{{ today.strftime('%d/%m/%Y') }}</strong>
+          </div>
+        </div>
+        <div class="col-sm-6">
+          <div class="d-flex justify-content-between py-1 border-bottom small">
+            <span class="text-muted">Employé</span>
+            <strong>{{ current_user.prenom }} {{ current_user.nom }}</strong>
+          </div>
+        </div>
+        <div class="col-sm-6">
+          <div class="d-flex justify-content-between py-1 border-bottom small">
+            <span class="text-muted">Total ventes</span>
+            <strong>{{ stats.sales_count }}</strong>
+          </div>
+        </div>
+        <div class="col-sm-6">
+          <div class="d-flex justify-content-between py-1 border-bottom small">
+            <span class="text-muted">Montant total</span>
+            <strong>{{ "%.0f"|format(stats.total_amount) }} FCFA</strong>
+          </div>
+        </div>
+        <div class="col-sm-6">
+          <div class="d-flex justify-content-between py-1 border-bottom small">
+            <span class="text-muted">Coût total</span>
+            <strong>{{ "%.0f"|format(stats.total_cost) }} FCFA</strong>
+          </div>
+        </div>
+        <div class="col-sm-6">
+          <div class="d-flex justify-content-between py-1 border-bottom small">
+            <span class="text-muted">Bénéfice net</span>
+            <strong class="text-success">{{ "%.0f"|format(stats.total_profit) }} FCFA</strong>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

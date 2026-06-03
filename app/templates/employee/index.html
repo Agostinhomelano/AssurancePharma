@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+{% block title %}Accueil - AssurancePharma{% endblock %}
+{% block content %}
+<div class="fade-in">
+  <div class="welcome-banner mb-4">
+    <div class="row align-items-center">
+      <div class="col-8">
+        <h4 class="mb-1 text-white">Bonjour, {{ current_user.prenom }} !</h4>
+        <p class="mb-0 text-white-50 small">{{ now().strftime('%d %B %Y') }}</p>
+      </div>
+      <div class="col-4 text-end">
+        <i class="fas fa-mortar-pestle welcome-icon"></i>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-2 g-md-3 mb-4">
+    <div class="col-4">
+      <div class="stat-card">
+        <div class="stat-icon bg-success"><i class="fas fa-shopping-cart"></i></div>
+        <h3>{{ stats.sales_count }}</h3>
+        <h6>Ventes du jour</h6>
+      </div>
+    </div>
+    <div class="col-4">
+      <div class="stat-card">
+        <div class="stat-icon bg-info"><i class="fas fa-money-bill-wave"></i></div>
+        <h3>{{ "%.0f"|format(stats.total_amount) }} <small class="fs-6 text-muted">F</small></h3>
+        <h6>Montant</h6>
+      </div>
+    </div>
+    <div class="col-4">
+      <div class="stat-card">
+        <div class="stat-icon bg-warning"><i class="fas fa-gem"></i></div>
+        <h3>{{ "%.0f"|format(stats.total_profit) }} <small class="fs-6 text-muted">F</small></h3>
+        <h6>Bénéfice</h6>
+      </div>
+    </div>
+    <div class="col-6">
+      <div class="stat-card">
+        <div class="stat-icon bg-primary"><i class="fas fa-pills"></i></div>
+        <h3>{{ stats.total_medicines }}</h3>
+        <h6>Disponibles</h6>
+      </div>
+    </div>
+    <div class="col-6">
+      <div class="stat-card">
+        <div class="stat-icon bg-danger"><i class="fas fa-exclamation-triangle"></i></div>
+        <h3>{{ stats.low_stock }}</h3>
+        <h6>Stock faible</h6>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-2 g-md-3 mb-4">
+    <div class="col-6">
+      <a href="{{ url_for('sales.sales_interface') }}" class="quick-card">
+        <div class="quick-card-icon bg-success"><i class="fas fa-cart-plus"></i></div>
+        <span>Nouvelle vente</span>
+      </a>
+    </div>
+    <div class="col-6">
+      <a href="{{ url_for('employee.medicines') }}" class="quick-card">
+        <div class="quick-card-icon bg-primary"><i class="fas fa-pills"></i></div>
+        <span>Médicaments</span>
+      </a>
+    </div>
+    <div class="col-6">
+      <a href="{{ url_for('employee.activities') }}" class="quick-card">
+        <div class="quick-card-icon bg-info"><i class="fas fa-history"></i></div>
+        <span>Activités</span>
+      </a>
+    </div>
+    <div class="col-6">
+      <a href="{{ url_for('employee.report') }}" class="quick-card">
+        <div class="quick-card-icon bg-warning"><i class="fas fa-file-excel"></i></div>
+        <span>Rapport</span>
+      </a>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <span><i class="fas fa-pills"></i> Stock disponible</span>
+      <a href="{{ url_for('employee.medicines') }}" class="btn btn-light btn-sm py-1">Voir tout</a>
+    </div>
+    <div class="card-body p-0">
+      <div class="table-responsive" style="max-height: 280px; overflow-y: auto;">
+        <table class="table mb-0">
+          <thead>
+            <tr>
+              <th>Médicament</th>
+              <th>Stock</th>
+              <th>Prix</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for m in medicines[:10] %}
+            <tr>
+              <td class="small">{{ m.nom }}</td>
+              <td>
+                <span class="badge {% if m.stock_faible %}bg-danger{% else %}bg-success{% endif %}">{{ m.quantite }}</span>
+              </td>
+              <td class="small">{{ "%.0f"|format(m.prix_vente) }} F</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

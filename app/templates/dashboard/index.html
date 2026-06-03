@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+{% block title %}Tableau de bord - AssurancePharma{% endblock %}
+{% block content %}
+<div class="fade-in">
+  <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+    <h1 class="page-title mb-0"><i class="fas fa-chart-line"></i> Tableau de bord</h1>
+    <a href="{{ url_for('reports.download_today') }}" class="btn btn-success btn-sm">
+      <i class="fas fa-file-excel"></i> Rapport du jour
+    </a>
+  </div>
+
+  <div class="row g-2 g-md-3 mb-3" id="stats-container">
+    <div class="col-6 col-md-3">
+      <div class="stat-card">
+        <div class="stat-icon bg-primary"><i class="fas fa-pills"></i></div>
+        <h6>Médicaments</h6>
+        <h3 id="total-medicines">-</h3>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="stat-card">
+        <div class="stat-icon bg-warning"><i class="fas fa-exclamation-triangle"></i></div>
+        <h6>Stock faible</h6>
+        <h3 id="low-stock">-</h3>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="stat-card">
+        <div class="stat-icon bg-danger"><i class="fas fa-calendar"></i></div>
+        <h6>Expiration</h6>
+        <h3 id="expiring">-</h3>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="stat-card">
+        <div class="stat-icon bg-success"><i class="fas fa-shopping-cart"></i></div>
+        <h6>Ventes jour</h6>
+        <h3 id="sales-today">-</h3>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="stat-card">
+        <div class="stat-icon bg-info"><i class="fas fa-money-bill-wave"></i></div>
+        <h6>Montant</h6>
+        <h3 id="amount-today">-</h3>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="stat-card">
+        <div class="stat-icon bg-secondary"><i class="fas fa-gem"></i></div>
+        <h6>Bénéfice</h6>
+        <h3 id="profit-today">-</h3>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="stat-card">
+        <div class="stat-icon bg-primary"><i class="fas fa-users"></i></div>
+        <h6>Employés</h6>
+        <h3 id="total-employees">-</h3>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="stat-card">
+        <div class="stat-icon bg-warning"><i class="fas fa-truck"></i></div>
+        <h6>Fournisseurs</h6>
+        <h3 id="total-suppliers">-</h3>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-2 g-md-3">
+    <div class="col-lg-6">
+      <div class="card h-100">
+        <div class="card-header"><i class="fas fa-chart-line"></i> Évolution des ventes</div>
+        <div class="card-body">
+          <canvas id="salesChart" height="200"></canvas>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-6">
+      <div class="card h-100">
+        <div class="card-header"><i class="fas fa-list"></i> Activités récentes</div>
+        <div class="card-body p-2 p-md-3">
+          <div id="activities-list" style="max-height: 300px; overflow-y: auto">
+            <p class="text-muted text-center mb-0">Chargement...</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  function loadStats() {
+    fetch('{{ url_for("dashboard.get_stats") }}')
+      .then(r => r.json())
+      .then(data => {
+        document.getElementById('total-medicines').textContent = data.total_medicines;
+        document.getElementById('low-stock').textContent = data.medicines_low_stock;
+        document.getElementById('expiring').textContent = data.medicines_expiring;
+        document.getElementById('sales-today').textContent = data.total_sales_today;
+        document.getElementById('amount-today').textContent = data.total_amount_today.toFixed(2) + ' FCFA';
+        document.getElementById('profit-today').textContent = data.total_profit_today.toFixed(2) + ' FCFA';
+        document.getElementById('total-employees').textContent = data.total_employees;
+        document.getElementById('total-suppliers').textContent = data.total_suppliers;
+      });
+  }
+
+  function loadSalesEvolution() {
+    fetch('{{ url_for("dashboard.get_sales_evolution") }}')
+      .then(r => r.json())
+      .then(data => {
+        new Chart(document.getElementById('salesChart'), {
+          type: 'line',
+          data: {
+            labels: data.map(d => d.date),
+            datasets: [{
+              label: 'Ventes (FCFA)',
+              data: data.map(d => d.amount),
+              borderColor: '#0d6efd',
+              backgroundColor: 'rgba(13, 110, 253, 0.1)',
+              tension: 0.4,
+              fill: true,
+              pointRadius: 3
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: { legend: { display: false } },
+            scales: { y: { beginAtZero: true, ticks: { font: { size: 10 } } } }
+          }
+        });
+      });
+  }
+
+  function loadActivities() {
+    fetch('{{ url_for("dashboard.get_recent_activities") }}')
+      .then(r => r.json())
+      .then(data => {
+        const html = data.map(a =>
+          `<div class="activity-item"><strong>${a.user_name}</strong><br>${a.action}<br><small class="text-muted">${new Date(a.created_at).toLocaleString('fr-FR')}</small></div>`
+        ).join('');
+        document.getElementById('activities-list').innerHTML = html || '<p class="text-muted text-center mb-0">Aucune activité</p>';
+      });
+  }
+
+  document.addEventListener('DOMContentLoaded', () => { loadStats(); loadSalesEvolution(); loadActivities(); setInterval(loadStats, 30000); setInterval(loadActivities, 30000); });
+</script>
+{% endblock %}
