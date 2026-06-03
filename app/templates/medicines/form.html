@@ -44,10 +44,7 @@
             <label class="form-label">Stock min</label>
             <input type="number" class="form-control" name="stock_minimum" value="{{ medicine.stock_minimum if medicine else '10' }}" />
           </div>
-          <div class="col-6 col-md-4">
-            <label class="form-label">Code barre</label>
-            <input type="text" class="form-control" name="code_barre" value="{{ medicine.code_barre if medicine else '' }}" />
-          </div>
+
           <div class="col-6 col-md-4">
             <label class="form-label">Expiration</label>
             <input type="date" class="form-control" name="date_expiration" value="{{ medicine.date_expiration.strftime('%Y-%m-%d') if medicine and medicine.date_expiration else '' }}" />

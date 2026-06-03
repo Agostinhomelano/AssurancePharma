@@ -1,6 +1,7 @@
 from flask import Blueprint, render_template, jsonify, request, redirect, url_for, flash
 from flask_login import login_required, current_user
 from datetime import datetime
+from sqlalchemy.exc import IntegrityError
 from app import db
 from app.models import Employee
 from app.utils import Validators, gerant_required
@@ -53,9 +54,12 @@ def create_employee():
             )
             flash(f"Employé {employee.prenom} {employee.nom} créé avec succès", 'success')
             return redirect(url_for('employees.list_employees'))
-        except Exception as e:
+        except IntegrityError:
             db.session.rollback()
-            flash(f"Erreur: {str(e)}", 'danger')
+            flash("Cet email est déjà utilisé par un autre employé.", 'danger')
+        except Exception:
+            db.session.rollback()
+            flash("Une erreur est survenue lors de la création. Veuillez réessayer.", 'danger')
 
     return render_template('employees/form.html')
 
@@ -90,9 +94,12 @@ def edit_employee(employee_id):
             )
             flash(f"Employé {employee.prenom} {employee.nom} modifié", 'success')
             return redirect(url_for('employees.list_employees'))
-        except Exception as e:
+        except IntegrityError:
             db.session.rollback()
-            flash(f"Erreur: {str(e)}", 'danger')
+            flash("Cet email est déjà utilisé par un autre employé.", 'danger')
+        except Exception:
+            db.session.rollback()
+            flash("Une erreur est survenue lors de la modification. Veuillez réessayer.", 'danger')
 
     return render_template('employees/form.html', employee=employee)
 
@@ -128,7 +135,7 @@ def delete_employee(employee_id):
             ""
         )
         flash(f"Employé {nom_complet} supprimé", 'success')
-    except Exception as e:
+    except Exception:
         db.session.rollback()
-        flash(f"Erreur lors de la suppression: {str(e)}", 'danger')
+        flash("Impossible de supprimer cet employé car il est lié à des ventes.", 'danger')
     return redirect(url_for('employees.list_employees'))

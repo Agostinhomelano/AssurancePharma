@@ -66,9 +66,9 @@ def create_supplier():
             flash(f"Fournisseur {supplier.nom} créé avec succès", 'success')
             return redirect(url_for('suppliers.list_suppliers'))
         
-        except Exception as e:
+        except Exception:
             db.session.rollback()
-            flash(f"Erreur: {str(e)}", 'error')
+            flash("Une erreur est survenue lors de la création. Veuillez réessayer.", 'error')
             return redirect(url_for('suppliers.create_supplier'))
     
     return render_template('suppliers/form.html')
@@ -106,9 +106,9 @@ def edit_supplier(supplier_id):
             flash(f"Fournisseur {supplier.nom} modifié avec succès", 'success')
             return redirect(url_for('suppliers.list_suppliers'))
         
-        except Exception as e:
+        except Exception:
             db.session.rollback()
-            flash(f"Erreur: {str(e)}", 'error')
+            flash("Une erreur est survenue lors de la modification. Veuillez réessayer.", 'error')
     
     return render_template('suppliers/form.html', supplier=supplier)
 
@@ -135,9 +135,9 @@ def delete_supplier(supplier_id):
         )
         
         flash(f"Fournisseur {nom} supprimé avec succès", 'success')
-    except Exception as e:
+    except Exception:
         db.session.rollback()
-        flash(f"Erreur: {str(e)}", 'error')
+        flash("Impossible de supprimer ce fournisseur car il est lié à des médicaments.", 'error')
     
     return redirect(url_for('suppliers.list_suppliers'))
 

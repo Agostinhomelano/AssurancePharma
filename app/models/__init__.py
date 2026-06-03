@@ -76,8 +76,6 @@ class Medicine(db.Model):
     prix_vente = db.Column(db.Float, nullable=False)
     quantite = db.Column(db.Integer, default=0)
     stock_minimum = db.Column(db.Integer, default=10)
-    code_barre = db.Column(db.String(50), unique=True)
-    date_expiration = db.Column(db.Date)
     gerant_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     fournisseur_id = db.Column(db.Integer, db.ForeignKey('suppliers.id'))
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
@@ -104,7 +102,7 @@ class Medicine(db.Model):
             'id': self.id, 'nom': self.nom, 'categorie': self.categorie,
             'description': self.description, 'prix_achat': self.prix_achat,
             'prix_vente': self.prix_vente, 'quantite': self.quantite,
-            'stock_minimum': self.stock_minimum, 'code_barre': self.code_barre,
+            'stock_minimum': self.stock_minimum,
             'date_expiration': self.date_expiration.isoformat() if self.date_expiration else None,
             'fournisseur_id': self.fournisseur_id,
             'stock_faible': self.stock_faible, 'proche_expiration': self.proche_expiration,

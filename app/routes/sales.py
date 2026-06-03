@@ -35,7 +35,7 @@ def api_get_medicines():
         'nom': m.nom,
         'prix_vente': m.prix_vente,
         'quantite': m.quantite,
-        'code_barre': m.code_barre,
+        'categorie': m.categorie,
         'disponible': m.quantite > 0
     } for m in medicines])
 
@@ -142,9 +142,9 @@ def delete_sale(sale_id):
             f"Montant: {sale.total_amount} FCFA"
         )
         flash("Vente supprimée", 'success')
-    except Exception as e:
+    except Exception:
         db.session.rollback()
-        flash(f"Erreur: {str(e)}", 'danger')
+        flash("Impossible de supprimer cette vente. Veuillez réessayer.", 'danger')
     return redirect(url_for('sales.list_sales'))
 
 @sales_bp.route('/api/<int:sale_id>')

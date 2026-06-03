@@ -60,7 +60,6 @@ def create_medicine():
                 prix_vente=float(data.get('prix_vente')),
                 quantite=int(data.get('quantite')),
                 stock_minimum=int(data.get('stock_minimum', 10)),
-                code_barre=data.get('code_barre', ''),
                 date_expiration=datetime.strptime(data.get('date_expiration'), '%Y-%m-%d').date() if data.get('date_expiration') else None,
                 gerant_id=current_user.id,
                 fournisseur_id=data.get('fournisseur_id') if data.get('fournisseur_id') else None
@@ -78,9 +77,9 @@ def create_medicine():
             flash(f"Médicament {medicine.nom} créé avec succès", 'success')
             return redirect(url_for('medicines.list_medicines'))
         
-        except Exception as e:
+        except Exception:
             db.session.rollback()
-            flash(f"Erreur: {str(e)}", 'error')
+            flash("Une erreur est survenue lors de la création. Veuillez réessayer.", 'error')
             return redirect(url_for('medicines.create_medicine'))
     
     suppliers = Supplier.query.filter_by(gerant_id=current_user.id).all()
@@ -108,7 +107,6 @@ def edit_medicine(medicine_id):
             medicine.prix_vente = float(data.get('prix_vente'))
             medicine.quantite = int(data.get('quantite'))
             medicine.stock_minimum = int(data.get('stock_minimum', 10))
-            medicine.code_barre = data.get('code_barre', '')
             if data.get('date_expiration'):
                 medicine.date_expiration = datetime.strptime(data.get('date_expiration'), '%Y-%m-%d').date()
             medicine.fournisseur_id = data.get('fournisseur_id') if data.get('fournisseur_id') else None
@@ -125,9 +123,9 @@ def edit_medicine(medicine_id):
             flash(f"Médicament {medicine.nom} modifié avec succès", 'success')
             return redirect(url_for('medicines.list_medicines'))
         
-        except Exception as e:
+        except Exception:
             db.session.rollback()
-            flash(f"Erreur: {str(e)}", 'error')
+            flash("Une erreur est survenue lors de la modification. Veuillez réessayer.", 'error')
     
     suppliers = Supplier.query.filter_by(gerant_id=current_user.id).all()
     return render_template('medicines/form.html', medicine=medicine, suppliers=suppliers)
@@ -155,9 +153,9 @@ def delete_medicine(medicine_id):
         )
         
         flash(f"Médicament {nom} supprimé avec succès", 'success')
-    except Exception as e:
+    except Exception:
         db.session.rollback()
-        flash(f"Erreur: {str(e)}", 'error')
+        flash("Impossible de supprimer ce médicament car il est lié à des ventes.", 'error')
     
     return redirect(url_for('medicines.list_medicines'))
 
@@ -187,7 +185,6 @@ def api_create_medicine():
             prix_vente=float(data.get('prix_vente')),
             quantite=int(data.get('quantite', 0)),
             stock_minimum=int(data.get('stock_minimum', 10)),
-            code_barre=data.get('code_barre', ''),
             date_expiration=datetime.strptime(data.get('date_expiration'), '%Y-%m-%d').date() if data.get('date_expiration') else None,
             gerant_id=gerant_id
         )
@@ -200,9 +197,9 @@ def api_create_medicine():
             f"Prix: {medicine.prix_vente} FCFA"
         )
         flash(f"Médicament {medicine.nom} créé", 'success')
-    except Exception as e:
+    except Exception:
         db.session.rollback()
-        flash(f"Erreur: {str(e)}", 'error')
+        flash("Une erreur est survenue lors de l'ajout. Veuillez réessayer.", 'error')
 
     if hasattr(current_user, 'fonction'):
         return redirect(url_for('employee.medicines'))

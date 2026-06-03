@@ -108,10 +108,7 @@
       </div>
       <form method="POST" action="{{ url_for('medicines.api_create_medicine') }}" id="addMedicineForm">
         <div class="modal-body">
-          <div class="mb-2">
-            <label class="form-label">Nom</label>
-            <input type="text" name="nom" class="form-control form-control-sm" required>
-          </div>
+
           <div class="row g-2 mb-2">
             <div class="col-6">
               <label class="form-label">Catégorie</label>
@@ -127,11 +124,6 @@
                 <option>Autre</option>
               </select>
             </div>
-            <div class="col-6">
-              <label class="form-label">Code barre</label>
-              <input type="text" name="code_barre" class="form-control form-control-sm">
-            </div>
-          </div>
           <div class="row g-2 mb-2">
             <div class="col-4">
               <label class="form-label">Prix achat</label>

@@ -15,7 +15,7 @@
         <div class="card-header"><i class="fas fa-search"></i> Rechercher</div>
         <div class="card-body p-2 p-md-3">
           <div class="mb-2">
-            <input type="text" class="form-control" id="searchMedicine" placeholder="Nom ou code barre..." oninput="filterMedicines(this.value)" />
+            <input type="text" class="form-control" id="searchMedicine" placeholder="Nom du médicament..." oninput="filterMedicines(this.value)" />
           </div>
           <div class="table-responsive" style="max-height: 350px; overflow-y: auto;">
             <table class="table table-sm mb-0" id="medicinesTable">
@@ -29,7 +29,7 @@
               </thead>
               <tbody>
                 {% for med in medicines %}
-                <tr class="medicine-row" data-name="{{ med.nom|lower }}" data-barcode="{{ med.code_barre|lower if med.code_barre else '' }}">
+                <tr class="medicine-row" data-name="{{ med.nom|lower }}">
                   <td class="small">{{ med.nom }}</td>
                   <td class="small">{{ "%.0f"|format(med.prix_vente) }}</td>
                   <td>
@@ -85,7 +85,7 @@
   function filterMedicines(q) {
     q = q.toLowerCase();
     document.querySelectorAll('.medicine-row').forEach(r => {
-      r.style.display = (r.dataset.name.includes(q) || r.dataset.barcode.includes(q)) ? '' : 'none';
+      r.style.display = r.dataset.name.includes(q) ? '' : 'none';
     });
   }
   function addToCart(id, name, price) {
