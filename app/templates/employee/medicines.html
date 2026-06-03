@@ -40,7 +40,7 @@
                       {{ m.quantite }}
                     </span>
                   </td>
-                  <td class="small">{{ "%.0f"|format(m.prix_vente) }} F</td>
+                  <td class="small">{{ "%.0f"|format(m.prix_vente) }} FC</td>
                   <td>
                     {% if m.quantite <= 0 %}
                     <span class="badge bg-dark">Rupture</span>
@@ -70,8 +70,8 @@
             <label class="form-label">Catégorie</label>
             <select class="form-select form-select-sm" id="categoryFilter" onchange="filterMedicines(document.getElementById('searchMed').value)">
               <option value="">Toutes</option>
-              {% for cat in medicines|map(attribute='categorie')|unique %}
-              <option value="{{ cat }}">{{ cat }}</option>
+              {% for cat in categories %}
+              <option value="{{ cat.nom }}">{{ cat.nom }}</option>
               {% endfor %}
             </select>
           </div>
@@ -111,19 +111,19 @@
 
           <div class="row g-2 mb-2">
             <div class="col-6">
+              <label class="form-label">Nom</label>
+              <input type="text" name="nom" class="form-control form-control-sm" required>
+            </div>
+            <div class="col-6">
               <label class="form-label">Catégorie</label>
               <select name="categorie" class="form-select form-select-sm" required>
                 <option value="">Choisir...</option>
-                <option>Antalgique</option>
-                <option>Antibiotique</option>
-                <option>Anti-inflammatoire</option>
-                <option>Vitamine</option>
-                <option>Cardiologique</option>
-                <option>Digestif</option>
-                <option>Dermatologique</option>
-                <option>Autre</option>
+                {% for cat in categories %}
+                <option value="{{ cat.nom }}">{{ cat.nom }}</option>
+                {% endfor %}
               </select>
             </div>
+          </div>
           <div class="row g-2 mb-2">
             <div class="col-4">
               <label class="form-label">Prix achat</label>

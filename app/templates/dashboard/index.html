@@ -100,8 +100,8 @@
         document.getElementById('low-stock').textContent = data.medicines_low_stock;
         document.getElementById('expiring').textContent = data.medicines_expiring;
         document.getElementById('sales-today').textContent = data.total_sales_today;
-        document.getElementById('amount-today').textContent = data.total_amount_today.toFixed(2) + ' FCFA';
-        document.getElementById('profit-today').textContent = data.total_profit_today.toFixed(2) + ' FCFA';
+        document.getElementById('amount-today').textContent = data.total_amount_today.toFixed(2) + ' FC';
+        document.getElementById('profit-today').textContent = data.total_profit_today.toFixed(2) + ' FC';
         document.getElementById('total-employees').textContent = data.total_employees;
         document.getElementById('total-suppliers').textContent = data.total_suppliers;
       });
@@ -116,7 +116,7 @@
           data: {
             labels: data.map(d => d.date),
             datasets: [{
-              label: 'Ventes (FCFA)',
+              label: 'Ventes (FC)',
               data: data.map(d => d.amount),
               borderColor: '#0d6efd',
               backgroundColor: 'rgba(13, 110, 253, 0.1)',

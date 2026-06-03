@@ -13,7 +13,7 @@ employees_bp = Blueprint('employees', __name__, url_prefix='/employees')
 @login_required
 @gerant_required
 def list_employees():
-    employees = Employee.query.filter_by(gerant_id=current_user.id).all()
+    employees = Employee.query.filter_by(gerant_id=current_user.effective_gerant_id).all()
     return render_template('employees/list.html', employees=employees)
 
 @employees_bp.route('/create', methods=['GET', 'POST'])
@@ -40,7 +40,7 @@ def create_employee():
                 email=data.get('email'),
                 telephone=data.get('telephone', ''),
                 fonction=data.get('fonction'),
-                gerant_id=current_user.id
+                gerant_id=current_user.effective_gerant_id
             )
             password = data.get('password', 'Emp1234')
             employee.set_password(password)
@@ -68,7 +68,7 @@ def create_employee():
 @gerant_required
 def edit_employee(employee_id):
     employee = Employee.query.get_or_404(employee_id)
-    if employee.gerant_id != current_user.id:
+    if employee.gerant_id != current_user.effective_gerant_id:
         flash('Non autorisé', 'danger')
         return redirect(url_for('employees.list_employees'))
 
@@ -108,7 +108,7 @@ def edit_employee(employee_id):
 @gerant_required
 def toggle_status(employee_id):
     employee = Employee.query.get_or_404(employee_id)
-    if employee.gerant_id != current_user.id:
+    if employee.gerant_id != current_user.effective_gerant_id:
         return jsonify({'error': 'Non autorisé'}), 403
 
     employee.actif = not employee.actif
@@ -122,7 +122,7 @@ def toggle_status(employee_id):
 @gerant_required
 def delete_employee(employee_id):
     employee = Employee.query.get_or_404(employee_id)
-    if employee.gerant_id != current_user.id:
+    if employee.gerant_id != current_user.effective_gerant_id:
         return jsonify({'error': 'Non autorisé'}), 403
 
     nom_complet = f"{employee.prenom} {employee.nom}"

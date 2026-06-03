@@ -15,7 +15,7 @@ dashboard_bp = Blueprint('dashboard', __name__)
 def index():
     """Page principale du tableau de bord"""
     # Vérifier que c'est un gérant
-    if not hasattr(current_user, 'role') or current_user.role != 'gerant':
+    if not hasattr(current_user, 'role') or current_user.role not in ('gerant', 'co-gerant'):
         return redirect(url_for('auth.login'))
     
     return render_template('dashboard/index.html')
@@ -24,12 +24,12 @@ def index():
 @login_required
 def get_stats():
     """Récupère les statistiques du tableau de bord"""
-    if not hasattr(current_user, 'role') or current_user.role != 'gerant':
+    if not hasattr(current_user, 'role') or current_user.role not in ('gerant', 'co-gerant'):
         return jsonify({'error': 'Non autorisé'}), 403
     
     # Statistiques
-    total_medicines = Medicine.query.filter_by(gerant_id=current_user.id).count()
-    medicines_low_stock = Medicine.query.filter_by(gerant_id=current_user.id).filter(
+    total_medicines = Medicine.query.filter_by(gerant_id=current_user.effective_gerant_id).count()
+    medicines_low_stock = Medicine.query.filter_by(gerant_id=current_user.effective_gerant_id).filter(
         Medicine.quantite < Medicine.stock_minimum
     ).count()
     
@@ -37,7 +37,7 @@ def get_stats():
     today = datetime.now().date()
     today_sales = Sale.query.join(Employee).filter(
         db.func.date(Sale.created_at) == today,
-        Employee.gerant_id == current_user.id
+        Employee.gerant_id == current_user.effective_gerant_id
     ).all()
     
     total_sales_today = len(today_sales)
@@ -45,11 +45,11 @@ def get_stats():
     total_profit_today = sum(s.profit for s in today_sales)
     
     # Employés et fournisseurs
-    total_employees = Employee.query.filter_by(gerant_id=current_user.id).count()
-    total_suppliers = Supplier.query.filter_by(gerant_id=current_user.id).count()
+    total_employees = Employee.query.filter_by(gerant_id=current_user.effective_gerant_id).count()
+    total_suppliers = Supplier.query.filter_by(gerant_id=current_user.effective_gerant_id).count()
     
     # Produits proches de l'expiration
-    medicines_expiring = Medicine.query.filter_by(gerant_id=current_user.id).filter(
+    medicines_expiring = Medicine.query.filter_by(gerant_id=current_user.effective_gerant_id).filter(
         Medicine.date_expiration <= datetime.now().date() + timedelta(days=30)
     ).count()
     
@@ -68,7 +68,7 @@ def get_stats():
 @login_required
 def get_sales_evolution():
     """Évolution des ventes sur les 7 derniers jours"""
-    if not hasattr(current_user, 'role') or current_user.role != 'gerant':
+    if not hasattr(current_user, 'role') or current_user.role not in ('gerant', 'co-gerant'):
         return jsonify({'error': 'Non autorisé'}), 403
     
     data = []
@@ -76,7 +76,7 @@ def get_sales_evolution():
         date = (datetime.now().date() - timedelta(days=i))
         sales = Sale.query.join(Employee).filter(
             db.func.date(Sale.created_at) == date,
-            Employee.gerant_id == current_user.id
+            Employee.gerant_id == current_user.effective_gerant_id
         ).all()
         
         total = sum(s.total_amount for s in sales)
@@ -91,7 +91,7 @@ def get_sales_evolution():
 @login_required
 def get_top_medicines():
     """Top 5 des médicaments vendus"""
-    if not hasattr(current_user, 'role') or current_user.role != 'gerant':
+    if not hasattr(current_user, 'role') or current_user.role not in ('gerant', 'co-gerant'):
         return jsonify({'error': 'Non autorisé'}), 403
     
     # TODO: Implémenter
@@ -101,7 +101,7 @@ def get_top_medicines():
 @login_required
 def get_recent_activities():
     """Activités récentes"""
-    if not hasattr(current_user, 'role') or current_user.role != 'gerant':
+    if not hasattr(current_user, 'role') or current_user.role not in ('gerant', 'co-gerant'):
         return jsonify({'error': 'Non autorisé'}), 403
     
     activities = Activity.query.filter_by(user_id=current_user.id).order_by(

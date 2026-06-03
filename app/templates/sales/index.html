@@ -4,7 +4,7 @@
 <div class="fade-in">
   <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
     <h1 class="page-title mb-0"><i class="fas fa-shopping-cart"></i> Interface de vente</h1>
-    <a href="{% if current_user.role is defined and current_user.role == 'gerant' %}{{ url_for('dashboard.index') }}{% else %}{{ url_for('employee.index') }}{% endif %}" class="btn btn-outline-secondary btn-sm">
+    <a href="{% if current_user.role is defined and current_user.role in ('gerant', 'co-gerant') %}{{ url_for('dashboard.index') }}{% else %}{{ url_for('employee.index') }}{% endif %}" class="btn btn-outline-secondary btn-sm">
       <i class="fas fa-arrow-left"></i> Retour
     </a>
   </div>
@@ -31,7 +31,7 @@
                 {% for med in medicines %}
                 <tr class="medicine-row" data-name="{{ med.nom|lower }}">
                   <td class="small">{{ med.nom }}</td>
-                  <td class="small">{{ "%.0f"|format(med.prix_vente) }}</td>
+                  <td class="small">{{ "%.0f"|format(med.prix_vente) }} FC</td>
                   <td>
                     <span class="badge {% if med.quantite <= 0 %}bg-danger{% elif med.stock_faible %}bg-warning{% else %}bg-success{% endif %}">
                       {{ med.quantite }}
@@ -63,7 +63,7 @@
           <hr class="my-2" />
           <div class="d-flex justify-content-between small">
             <strong>Total:</strong>
-            <strong id="cartTotal">0 FCFA</strong>
+            <strong id="cartTotal">0 FC</strong>
           </div>
           <hr class="my-2" />
           <select class="form-select form-select-sm mb-2" id="paymentMethod">
@@ -126,7 +126,7 @@
       `).join('');
       document.getElementById('checkoutBtn').disabled = false;
     }
-    document.getElementById('cartTotal').textContent = t.toFixed(0) + ' FCFA';
+    document.getElementById('cartTotal').textContent = t.toFixed(0) + ' FC';
   }
   function checkout() {
     if (!cart.length) return;

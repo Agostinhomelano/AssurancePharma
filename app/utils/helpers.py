@@ -5,7 +5,7 @@ Fonctions d'aide utiles
 from datetime import datetime
 import os
 
-def format_currency(amount, currency='FCFA'):
+def format_currency(amount, currency='FC'):
     """Formate un montant en devise"""
     return f"{amount:,.2f} {currency}".replace(',', ' ')
 

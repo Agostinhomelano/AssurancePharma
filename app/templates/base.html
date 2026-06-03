@@ -18,14 +18,14 @@
   </head>
   <body>
     <!-- Navigation -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary fixed-top">
       <div class="container-fluid">
         {% if current_user.is_authenticated %}
         <button class="menu-btn d-lg-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#mobileSidebar">
           <i class="fas fa-bars"></i>
         </button>
         {% endif %}
-        <a class="navbar-brand" href="{% if current_user.is_authenticated %}{% if current_user.role is defined and current_user.role == 'gerant' %}{{ url_for('dashboard.index') }}{% else %}{{ url_for('employee.index') }}{% endif %}{% else %}{{ url_for('auth.login') }}{% endif %}">
+        <a class="navbar-brand" href="{% if current_user.is_authenticated %}{% if current_user.role is defined and current_user.role in ('gerant', 'co-gerant') %}{{ url_for('dashboard.index') }}{% else %}{{ url_for('employee.index') }}{% endif %}{% else %}{{ url_for('auth.login') }}{% endif %}">
           <span class="logo-icon"><i class="fas fa-mortar-pestle"></i></span>
           <span class="brand-text">AssurancePharma</span>
         </a>
@@ -33,10 +33,10 @@
           <ul class="navbar-nav ms-auto align-items-center">
             {% if current_user.is_authenticated %}
             <li class="nav-item">
-              <span class="nav-link user-badge">
+              <a class="nav-link" href="{{ url_for('auth.profil') }}">
                 <i class="fas fa-user-circle"></i>
                 <span class="d-none d-md-inline">{{ current_user.prenom }} {{ current_user.nom }}</span>
-              </span>
+              </a>
             </li>
             <li class="nav-item">
               <a class="nav-link" href="{{ url_for('auth.logout') }}"><i class="fas fa-sign-out-alt"></i> <span class="d-none d-md-inline">Déconnexion</span></a>
@@ -63,10 +63,16 @@
       </div>
       <div class="offcanvas-body p-0">
         <div class="sidebar-user text-center py-3 border-bottom border-secondary">
-          <i class="fas fa-user-circle fa-3x mb-2" style="color:var(--primary);"></i>
+          <a href="{{ url_for('auth.profil') }}">
+            {% if current_user.photo %}
+            <img src="{{ url_for('static', filename='uploads/' + current_user.photo) }}" alt="Photo" class="rounded-circle mb-2" style="width:60px;height:60px;object-fit:cover;border:2px solid var(--primary);">
+            {% else %}
+            <i class="fas fa-user-circle fa-3x mb-2" style="color:var(--primary);"></i>
+            {% endif %}
+          </a>
           <h6 class="text-white mb-0">{{ current_user.prenom }} {{ current_user.nom }}</h6>
           <small class="text-muted">
-            {% if current_user.role is defined and current_user.role == 'gerant' %}
+            {% if current_user.role is defined and current_user.role in ('gerant', 'co-gerant') %}
               Gérant
             {% else %}
               {{ current_user.fonction }}
@@ -75,7 +81,7 @@
         </div>
         <div class="sidebar-section">Navigation</div>
 
-        {% if current_user.role is defined and current_user.role == 'gerant' %}
+        {% if current_user.role is defined and current_user.role in ('gerant', 'co-gerant') %}
         <!-- Gerant menu -->
         <a class="nav-link {% if request.endpoint == 'dashboard.index' %}active{% endif %}" href="{{ url_for('dashboard.index') }}" onclick="setTimeout(()=>{let b=document.querySelector('[data-bs-dismiss=offcanvas]');if(b)b.click()},100)"><i class="fas fa-home"></i> Dashboard</a>
         <a class="nav-link {% if request.endpoint and request.endpoint.startswith('medicines.') %}active{% endif %}" href="{{ url_for('medicines.list_medicines') }}" onclick="setTimeout(()=>{let b=document.querySelector('[data-bs-dismiss=offcanvas]');if(b)b.click()},100)"><i class="fas fa-pills"></i> Médicaments</a>
@@ -85,6 +91,12 @@
         <a class="nav-link {% if request.endpoint and request.endpoint.startswith('employees.') %}active{% endif %}" href="{{ url_for('employees.list_employees') }}" onclick="setTimeout(()=>{let b=document.querySelector('[data-bs-dismiss=offcanvas]');if(b)b.click()},100)"><i class="fas fa-users"></i> Employés</a>
         <a class="nav-link {% if request.endpoint and request.endpoint.startswith('reports.') %}active{% endif %}" href="{{ url_for('reports.index') }}" onclick="setTimeout(()=>{let b=document.querySelector('[data-bs-dismiss=offcanvas]');if(b)b.click()},100)"><i class="fas fa-file-excel"></i> Rapports</a>
         <a class="nav-link {% if request.endpoint and request.endpoint.startswith('activities.') %}active{% endif %}" href="{{ url_for('activities.list_activities') }}" onclick="setTimeout(()=>{let b=document.querySelector('[data-bs-dismiss=offcanvas]');if(b)b.click()},100)"><i class="fas fa-history"></i> Activités</a>
+        <a class="nav-link {% if request.endpoint and request.endpoint.startswith('categories.') %}active{% endif %}" href="{{ url_for('categories.list_categories') }}" onclick="setTimeout(()=>{let b=document.querySelector('[data-bs-dismiss=offcanvas]');if(b)b.click()},100)"><i class="fas fa-tags"></i> Catégories</a>
+        {% if current_user.role == 'gerant' %}
+        <a class="nav-link {% if request.endpoint and 'co_gerant' in request.endpoint %}active{% endif %}" href="{{ url_for('auth.list_co_gerants') }}" onclick="setTimeout(()=>{let b=document.querySelector('[data-bs-dismiss=offcanvas]');if(b)b.click()},100)"><i class="fas fa-user-friends"></i> Co-gérants</a>
+        {% endif %}
+        <hr class="border-secondary my-1">
+        <a class="nav-link {% if request.endpoint == 'auth.profil' %}active{% endif %}" href="{{ url_for('auth.profil') }}" onclick="setTimeout(()=>{let b=document.querySelector('[data-bs-dismiss=offcanvas]');if(b)b.click()},100)"><i class="fas fa-user-cog"></i> Mon Profil</a>
         {% else %}
         <!-- Employee menu -->
         <a class="nav-link {% if request.endpoint == 'employee.index' %}active{% endif %}" href="{{ url_for('employee.index') }}" onclick="setTimeout(()=>{let b=document.querySelector('[data-bs-dismiss=offcanvas]');if(b)b.click()},100)"><i class="fas fa-home"></i> Accueil</a>
@@ -93,6 +105,8 @@
         <a class="nav-link {% if request.endpoint == 'employee.activities' %}active{% endif %}" href="{{ url_for('employee.activities') }}" onclick="setTimeout(()=>{let b=document.querySelector('[data-bs-dismiss=offcanvas]');if(b)b.click()},100)"><i class="fas fa-history"></i> Activités</a>
         <div class="sidebar-section">Rapports</div>
         <a class="nav-link {% if request.endpoint == 'employee.report' %}active{% endif %}" href="{{ url_for('employee.report') }}" onclick="setTimeout(()=>{let b=document.querySelector('[data-bs-dismiss=offcanvas]');if(b)b.click()},100)"><i class="fas fa-file-excel"></i> Rapport journalier</a>
+        <hr class="border-secondary my-1">
+        <a class="nav-link {% if request.endpoint == 'auth.profil' %}active{% endif %}" href="{{ url_for('auth.profil') }}" onclick="setTimeout(()=>{let b=document.querySelector('[data-bs-dismiss=offcanvas]');if(b)b.click()},100)"><i class="fas fa-user-cog"></i> Mon Profil</a>
         {% endif %}
       </div>
     </div>
@@ -103,10 +117,16 @@
     <div class="app-layout">
       <div class="sidebar desktop-only">
         <div class="sidebar-user text-center py-3 border-bottom border-secondary">
-          <i class="fas fa-user-circle fa-3x mb-1" style="color:var(--primary);"></i>
+          <a href="{{ url_for('auth.profil') }}">
+            {% if current_user.photo %}
+            <img src="{{ url_for('static', filename='uploads/' + current_user.photo) }}" alt="Photo" class="rounded-circle mb-1" style="width:50px;height:50px;object-fit:cover;border:2px solid var(--primary);">
+            {% else %}
+            <i class="fas fa-user-circle fa-3x mb-1" style="color:var(--primary);"></i>
+            {% endif %}
+          </a>
           <h6 class="text-white mb-0" style="font-size:0.85rem;">{{ current_user.prenom }} {{ current_user.nom }}</h6>
           <small class="text-muted" style="font-size:0.7rem;">
-            {% if current_user.role is defined and current_user.role == 'gerant' %}
+            {% if current_user.role is defined and current_user.role in ('gerant', 'co-gerant') %}
               Gérant
             {% else %}
               {{ current_user.fonction }}
@@ -115,7 +135,7 @@
         </div>
         <div class="sidebar-section">Navigation</div>
 
-        {% if current_user.role is defined and current_user.role == 'gerant' %}
+        {% if current_user.role is defined and current_user.role in ('gerant', 'co-gerant') %}
         <!-- Gerant sidebar -->
         <a class="nav-link {% if request.endpoint == 'dashboard.index' %}active{% endif %}" href="{{ url_for('dashboard.index') }}"><i class="fas fa-home"></i> Dashboard</a>
         <a class="nav-link {% if request.endpoint and request.endpoint.startswith('medicines.') %}active{% endif %}" href="{{ url_for('medicines.list_medicines') }}"><i class="fas fa-pills"></i> Médicaments</a>
@@ -125,6 +145,12 @@
         <a class="nav-link {% if request.endpoint and request.endpoint.startswith('employees.') %}active{% endif %}" href="{{ url_for('employees.list_employees') }}"><i class="fas fa-users"></i> Employés</a>
         <a class="nav-link {% if request.endpoint and request.endpoint.startswith('reports.') %}active{% endif %}" href="{{ url_for('reports.index') }}"><i class="fas fa-file-excel"></i> Rapports</a>
         <a class="nav-link {% if request.endpoint and request.endpoint.startswith('activities.') %}active{% endif %}" href="{{ url_for('activities.list_activities') }}"><i class="fas fa-history"></i> Activités</a>
+        <a class="nav-link {% if request.endpoint and request.endpoint.startswith('categories.') %}active{% endif %}" href="{{ url_for('categories.list_categories') }}"><i class="fas fa-tags"></i> Catégories</a>
+        {% if current_user.role == 'gerant' %}
+        <a class="nav-link {% if request.endpoint and 'co_gerant' in request.endpoint %}active{% endif %}" href="{{ url_for('auth.list_co_gerants') }}"><i class="fas fa-user-friends"></i> Co-gérants</a>
+        {% endif %}
+        <hr class="border-secondary my-1">
+        <a class="nav-link {% if request.endpoint == 'auth.profil' %}active{% endif %}" href="{{ url_for('auth.profil') }}"><i class="fas fa-user-cog"></i> Mon Profil</a>
         {% else %}
         <!-- Employee sidebar -->
         <a class="nav-link {% if request.endpoint == 'employee.index' %}active{% endif %}" href="{{ url_for('employee.index') }}"><i class="fas fa-home"></i> Accueil</a>
@@ -133,6 +159,8 @@
         <a class="nav-link {% if request.endpoint == 'employee.activities' %}active{% endif %}" href="{{ url_for('employee.activities') }}"><i class="fas fa-history"></i> Activités</a>
         <div class="sidebar-section">Rapports</div>
         <a class="nav-link {% if request.endpoint == 'employee.report' %}active{% endif %}" href="{{ url_for('employee.report') }}"><i class="fas fa-file-excel"></i> Rapport journalier</a>
+        <hr class="border-secondary my-1">
+        <a class="nav-link {% if request.endpoint == 'auth.profil' %}active{% endif %}" href="{{ url_for('auth.profil') }}"><i class="fas fa-user-cog"></i> Mon Profil</a>
         {% endif %}
       </div>
       <div class="main-content">

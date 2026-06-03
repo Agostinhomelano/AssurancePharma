@@ -6,7 +6,7 @@ from flask import Blueprint, render_template, jsonify, request, redirect, url_fo
 from flask_login import login_required, current_user
 from datetime import datetime
 from app import db
-from app.models import Medicine, Supplier
+from app.models import Medicine, Supplier, Category
 from app.utils import Validators, gerant_required
 from app.services import ActivityService
 
@@ -20,7 +20,7 @@ def list_medicines():
     page = request.args.get('page', 1, type=int)
     search = request.args.get('search', '')
     
-    query = Medicine.query.filter_by(gerant_id=current_user.id)
+    query = Medicine.query.filter_by(gerant_id=current_user.effective_gerant_id)
     
     if search:
         query = query.filter(Medicine.nom.ilike(f'%{search}%'))
@@ -33,7 +33,7 @@ def list_medicines():
 @gerant_required
 def api_list_medicines():
     """API: Liste des médicaments"""
-    medicines = Medicine.query.filter_by(gerant_id=current_user.id).all()
+    medicines = Medicine.query.filter_by(gerant_id=current_user.effective_gerant_id).all()
     return jsonify([m.to_dict() for m in medicines])
 
 @medicines_bp.route('/create', methods=['GET', 'POST'])
@@ -61,7 +61,7 @@ def create_medicine():
                 quantite=int(data.get('quantite')),
                 stock_minimum=int(data.get('stock_minimum', 10)),
                 date_expiration=datetime.strptime(data.get('date_expiration'), '%Y-%m-%d').date() if data.get('date_expiration') else None,
-                gerant_id=current_user.id,
+                gerant_id=current_user.effective_gerant_id,
                 fournisseur_id=data.get('fournisseur_id') if data.get('fournisseur_id') else None
             )
             
@@ -71,7 +71,7 @@ def create_medicine():
             ActivityService.log_activity(
                 current_user.id,
                 f"Créé le médicament: {medicine.nom}",
-                f"Prix: {medicine.prix_vente} FCFA"
+                f"Prix: {medicine.prix_vente} FC"
             )
             
             flash(f"Médicament {medicine.nom} créé avec succès", 'success')
@@ -82,8 +82,9 @@ def create_medicine():
             flash("Une erreur est survenue lors de la création. Veuillez réessayer.", 'error')
             return redirect(url_for('medicines.create_medicine'))
     
-    suppliers = Supplier.query.filter_by(gerant_id=current_user.id).all()
-    return render_template('medicines/form.html', suppliers=suppliers)
+    suppliers = Supplier.query.filter_by(gerant_id=current_user.effective_gerant_id).all()
+    categories = Category.query.filter_by(gerant_id=current_user.effective_gerant_id).order_by(Category.nom).all()
+    return render_template('medicines/form.html', suppliers=suppliers, categories=categories)
 
 @medicines_bp.route('/<int:medicine_id>/edit', methods=['GET', 'POST'])
 @login_required
@@ -92,7 +93,7 @@ def edit_medicine(medicine_id):
     """Modifier un médicament"""
     medicine = Medicine.query.get_or_404(medicine_id)
     
-    if medicine.gerant_id != current_user.id:
+    if medicine.gerant_id != current_user.effective_gerant_id:
         flash("Non autorisé", 'error')
         return redirect(url_for('medicines.list_medicines'))
     
@@ -107,8 +108,7 @@ def edit_medicine(medicine_id):
             medicine.prix_vente = float(data.get('prix_vente'))
             medicine.quantite = int(data.get('quantite'))
             medicine.stock_minimum = int(data.get('stock_minimum', 10))
-            if data.get('date_expiration'):
-                medicine.date_expiration = datetime.strptime(data.get('date_expiration'), '%Y-%m-%d').date()
+            medicine.date_expiration = datetime.strptime(data.get('date_expiration'), '%Y-%m-%d').date() if data.get('date_expiration') else None
             medicine.fournisseur_id = data.get('fournisseur_id') if data.get('fournisseur_id') else None
             medicine.updated_at = datetime.now()
             
@@ -117,7 +117,7 @@ def edit_medicine(medicine_id):
             ActivityService.log_activity(
                 current_user.id,
                 f"Modifié le médicament: {medicine.nom}",
-                f"Nouveau prix: {medicine.prix_vente} FCFA"
+                f"Nouveau prix: {medicine.prix_vente} FC"
             )
             
             flash(f"Médicament {medicine.nom} modifié avec succès", 'success')
@@ -127,8 +127,9 @@ def edit_medicine(medicine_id):
             db.session.rollback()
             flash("Une erreur est survenue lors de la modification. Veuillez réessayer.", 'error')
     
-    suppliers = Supplier.query.filter_by(gerant_id=current_user.id).all()
-    return render_template('medicines/form.html', medicine=medicine, suppliers=suppliers)
+    suppliers = Supplier.query.filter_by(gerant_id=current_user.effective_gerant_id).all()
+    categories = Category.query.filter_by(gerant_id=current_user.effective_gerant_id).order_by(Category.nom).all()
+    return render_template('medicines/form.html', medicine=medicine, suppliers=suppliers, categories=categories)
 
 @medicines_bp.route('/<int:medicine_id>/delete', methods=['POST'])
 @login_required
@@ -137,7 +138,7 @@ def delete_medicine(medicine_id):
     """Supprimer un médicament"""
     medicine = Medicine.query.get_or_404(medicine_id)
     
-    if medicine.gerant_id != current_user.id:
+    if medicine.gerant_id != current_user.effective_gerant_id:
         flash("Non autorisé", 'error')
         return redirect(url_for('medicines.list_medicines'))
     
@@ -167,7 +168,7 @@ def api_create_medicine():
         gerant_id = current_user.gerant_id
     else:
         gerant_id = current_user.id
-        if current_user.role != 'gerant':
+        if current_user.role not in ('gerant', 'co-gerant'):
             return jsonify({'error': 'Non autorisé'}), 403
 
     data = request.form.to_dict()
@@ -194,7 +195,7 @@ def api_create_medicine():
         ActivityService.log_activity(
             gerant_id,
             f"Créé le médicament: {medicine.nom}",
-            f"Prix: {medicine.prix_vente} FCFA"
+            f"Prix: {medicine.prix_vente} FC"
         )
         flash(f"Médicament {medicine.nom} créé", 'success')
     except Exception:
@@ -213,7 +214,7 @@ def get_medicine(medicine_id):
     """API: Récupère un médicament"""
     medicine = Medicine.query.get_or_404(medicine_id)
     
-    if medicine.gerant_id != current_user.id:
+    if medicine.gerant_id != current_user.effective_gerant_id:
         return jsonify({'error': 'Non autorisé'}), 403
     
     return jsonify(medicine.to_dict())

@@ -25,14 +25,14 @@
     <div class="col-4">
       <div class="stat-card">
         <div class="stat-icon bg-info"><i class="fas fa-money-bill-wave"></i></div>
-        <h3>{{ "%.0f"|format(stats.total_amount) }} <small class="fs-6 text-muted">F</small></h3>
+        <h3>{{ "%.0f"|format(stats.total_amount) }} <small class="fs-6 text-muted">FC</small></h3>
         <h6>Montant</h6>
       </div>
     </div>
     <div class="col-4">
       <div class="stat-card">
         <div class="stat-icon bg-warning"><i class="fas fa-gem"></i></div>
-        <h3>{{ "%.0f"|format(stats.total_profit) }} <small class="fs-6 text-muted">F</small></h3>
+        <h3>{{ "%.0f"|format(stats.total_profit) }} <small class="fs-6 text-muted">FC</small></h3>
         <h6>Bénéfice</h6>
       </div>
     </div>
@@ -101,7 +101,7 @@
               <td>
                 <span class="badge {% if m.stock_faible %}bg-danger{% else %}bg-success{% endif %}">{{ m.quantite }}</span>
               </td>
-              <td class="small">{{ "%.0f"|format(m.prix_vente) }} F</td>
+              <td class="small">{{ "%.0f"|format(m.prix_vente) }} FC</td>
             </tr>
             {% endfor %}
           </tbody>

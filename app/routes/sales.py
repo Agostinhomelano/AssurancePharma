@@ -19,7 +19,7 @@ def sales_interface():
     if hasattr(current_user, 'fonction'):
         gerant_id = current_user.gerant_id
     else:
-        gerant_id = current_user.id
+        gerant_id = current_user.effective_gerant_id
 
     medicines = Medicine.query.filter_by(gerant_id=gerant_id).all()
     return render_template('sales/index.html', medicines=medicines)
@@ -28,7 +28,7 @@ def sales_interface():
 @login_required
 def api_get_medicines():
     """API: Récupère les médicaments disponibles"""
-    gerant_id = current_user.gerant_id if hasattr(current_user, 'gerant_id') else current_user.id
+    gerant_id = current_user.gerant_id if hasattr(current_user, 'gerant_id') else current_user.effective_gerant_id
     medicines = Medicine.query.filter_by(gerant_id=gerant_id).all()
     return jsonify([{
         'id': m.id,
@@ -48,7 +48,7 @@ def api_create_sale():
         employee_id = current_user.id
     else:
         user_id = current_user.id
-        emp = Employee.query.filter_by(gerant_id=current_user.id, actif=True).first()
+        emp = Employee.query.filter_by(gerant_id=current_user.effective_gerant_id, actif=True).first()
         if not emp:
             return jsonify({'error': 'Aucun employé actif pour enregistrer la vente'}), 400
         employee_id = emp.id
@@ -66,7 +66,7 @@ def api_create_sale():
         ActivityService.log_activity(
             user_id,
             f"Nouvelle vente ({len(items)} articles)",
-            f"Total: {sale.total_amount} FCFA, Bénéfice: {sale.profit} FCFA"
+            f"Total: {sale.total_amount} FC, Bénéfice: {sale.profit} FC"
         )
 
         return jsonify({
@@ -89,7 +89,7 @@ def list_sales():
     sales = Sale.query.join(
         Employee
     ).filter(
-        Employee.gerant_id == current_user.id
+        Employee.gerant_id == current_user.effective_gerant_id
     ).order_by(Sale.created_at.desc()).paginate(page=page, per_page=20)
     
     return render_template('sales/list.html', sales=sales)
@@ -100,7 +100,7 @@ def list_sales():
 def api_sales_stats():
     """API: Statistiques de vente"""
     sales = Sale.query.join(Employee).filter(
-        Employee.gerant_id == current_user.id
+        Employee.gerant_id == current_user.effective_gerant_id
     ).all()
     
     return jsonify({
@@ -117,7 +117,7 @@ def sale_details(sale_id):
     sale = Sale.query.get_or_404(sale_id)
     
     # Vérifier les permissions
-    if sale.employee.gerant_id != current_user.id and sale.employee_id != current_user.id:
+    if sale.employee.gerant_id != current_user.effective_gerant_id and sale.employee_id != current_user.id:
         flash("Non autorisé", 'error')
         return redirect(url_for('dashboard.index'))
     
@@ -129,7 +129,7 @@ def sale_details(sale_id):
 def delete_sale(sale_id):
     """Supprimer une vente"""
     sale = Sale.query.get_or_404(sale_id)
-    if sale.employee.gerant_id != current_user.id:
+    if sale.employee.gerant_id != current_user.effective_gerant_id:
         flash("Non autorisé", 'error')
         return redirect(url_for('sales.list_sales'))
 
@@ -139,7 +139,7 @@ def delete_sale(sale_id):
         ActivityService.log_activity(
             current_user.id,
             f"Supprimé la vente #{sale.id}",
-            f"Montant: {sale.total_amount} FCFA"
+            f"Montant: {sale.total_amount} FC"
         )
         flash("Vente supprimée", 'success')
     except Exception:
@@ -155,7 +155,7 @@ def api_get_sale(sale_id):
     
     # Vérifier les permissions
     gerant_id = sale.employee.gerant_id if hasattr(sale.employee, 'gerant_id') else None
-    if gerant_id != current_user.id and sale.employee_id != current_user.id:
+    if gerant_id != current_user.effective_gerant_id and sale.employee_id != current_user.id:
         return jsonify({'error': 'Non autorisé'}), 403
     
     return jsonify(sale.to_dict())

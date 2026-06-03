@@ -43,7 +43,7 @@
                   {{ medicine.quantite }}
                 </span>
               </td>
-              <td class="d-none d-sm-table-cell">{{ "%.0f"|format(medicine.prix_vente) }}</td>
+              <td class="d-none d-sm-table-cell">{{ "%.0f"|format(medicine.prix_vente) }} FC</td>
               <td class="d-none d-md-table-cell">
                 {% if medicine.date_expiration %}
                   <span class="badge {% if medicine.proche_expiration %}bg-warning{% else %}bg-secondary{% endif %}">

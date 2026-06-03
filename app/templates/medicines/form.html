@@ -19,8 +19,8 @@
             <label class="form-label">Catégorie *</label>
             <select class="form-select" name="categorie" required>
               <option value="">Sélectionner...</option>
-              {% for cat in ['Antalgiques','Antibiotiques','Anti-inflammatoires','Vitamines','Cardiovasculaires','Digestifs','Respiratoires','Dermatologiques','Autres'] %}
-              <option value="{{ cat }}" {% if medicine and medicine.categorie == cat %}selected{% endif %}>{{ cat }}</option>
+              {% for cat in categories %}
+              <option value="{{ cat.nom }}" {% if medicine and medicine.categorie == cat.nom %}selected{% endif %}>{{ cat.nom }}</option>
               {% endfor %}
             </select>
           </div>

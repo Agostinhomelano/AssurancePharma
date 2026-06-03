@@ -18,6 +18,7 @@
 }
 
 * { box-sizing: border-box; }
+body { padding-top: var(--nav-height); }
 
 body {
   font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;

@@ -28,6 +28,8 @@ def create_app(config_name='development'):
     
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'dev-secret-key-change-in-production')
+    app.config['UPLOAD_FOLDER'] = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static', 'uploads')
+    app.config['MAX_CONTENT_LENGTH'] = 2 * 1024 * 1024  # 2 MB limit
     
     # Initialisation des extensions
     db.init_app(app)
@@ -42,8 +44,8 @@ def create_app(config_name='development'):
         return {'now': datetime.now}
 
     # Enregistrement des blueprints
-    from app.routes import auth_bp, dashboard_bp, medicines_bp, suppliers_bp, employees_bp, sales_bp, reports_bp, activities_bp, employee_bp
-    
+    from app.routes import auth_bp, dashboard_bp, medicines_bp, suppliers_bp, employees_bp, sales_bp, reports_bp, activities_bp, employee_bp, categories_bp
+
     app.register_blueprint(auth_bp)
     app.register_blueprint(dashboard_bp)
     app.register_blueprint(medicines_bp)
@@ -53,6 +55,7 @@ def create_app(config_name='development'):
     app.register_blueprint(reports_bp)
     app.register_blueprint(activities_bp)
     app.register_blueprint(employee_bp)
+    app.register_blueprint(categories_bp)
     
     # Création des tables
     with app.app_context():
@@ -63,7 +66,7 @@ def create_app(config_name='development'):
 
 def init_database():
     """Initialise la base de données avec des données de test"""
-    from app.models import User, Medicine, Supplier, Employee, Activity
+    from app.models import User, Medicine, Supplier, Employee, Activity, Category
     
     # Vérifier si la BD est vide
     if User.query.first() is None:
@@ -102,6 +105,11 @@ def init_database():
         
         db.session.add_all([emp1, emp2])
         
+        # Créer des catégories par défaut
+        default_categories = ['Antalgiques', 'Antibiotiques', 'Vitamines', 'Anti-inflammatoires', 'Antihistaminiques', 'Digestifs']
+        for cat_name in default_categories:
+            db.session.add(Category(nom=cat_name, gerant_id=gerant.id))
+        
         # Créer des fournisseurs
         suppliers_data = [
             {'nom': 'Pharma Plus', 'telephone': '+33123456789', 'email': 'contact@pharmaplus.fr', 'adresse': 'Paris'},
@@ -116,17 +124,23 @@ def init_database():
         db.session.commit()
         
         # Créer des médicaments de test
+        from datetime import date as date_type
         medicines_data = [
             {'nom': 'Doliprane 500mg', 'categorie': 'Antalgiques', 'description': 'Paracétamol', 
-             'prix_achat': 2.50, 'prix_vente': 5.50, 'quantite': 100, 'stock_minimum': 20, 'fournisseur_id': 1},
+             'prix_achat': 2.50, 'prix_vente': 5.50, 'quantite': 100, 'stock_minimum': 20, 'fournisseur_id': 1,
+             'date_expiration': date_type(2026, 12, 31)},
             {'nom': 'Amoxicilline 500mg', 'categorie': 'Antibiotiques', 'description': 'Antibiotique', 
-             'prix_achat': 3.20, 'prix_vente': 8.20, 'quantite': 50, 'stock_minimum': 10, 'fournisseur_id': 2},
+             'prix_achat': 3.20, 'prix_vente': 8.20, 'quantite': 50, 'stock_minimum': 10, 'fournisseur_id': 2,
+             'date_expiration': date_type(2026, 6, 30)},
             {'nom': 'Vitamine C 500mg', 'categorie': 'Vitamines', 'description': 'Complément alimentaire', 
-             'prix_achat': 1.80, 'prix_vente': 3.80, 'quantite': 150, 'stock_minimum': 30, 'fournisseur_id': 1},
+             'prix_achat': 1.80, 'prix_vente': 3.80, 'quantite': 150, 'stock_minimum': 30, 'fournisseur_id': 1,
+             'date_expiration': date_type(2027, 3, 15)},
             {'nom': 'Paracétamol 1g', 'categorie': 'Antalgiques', 'description': 'Paracétamol fort', 
-             'prix_achat': 3.50, 'prix_vente': 6.50, 'quantite': 80, 'stock_minimum': 15, 'fournisseur_id': 3},
+             'prix_achat': 3.50, 'prix_vente': 6.50, 'quantite': 80, 'stock_minimum': 15, 'fournisseur_id': 3,
+             'date_expiration': date_type(2025, 8, 20)},
             {'nom': 'Ibuprofène 400mg', 'categorie': 'Anti-inflammatoires', 'description': 'Inflammatoire', 
-             'prix_achat': 2.70, 'prix_vente': 7.20, 'quantite': 120, 'stock_minimum': 25, 'fournisseur_id': 2},
+             'prix_achat': 2.70, 'prix_vente': 7.20, 'quantite': 120, 'stock_minimum': 25, 'fournisseur_id': 2,
+             'date_expiration': date_type(2026, 11, 10)},
         ]
         
         for med_data in medicines_data:

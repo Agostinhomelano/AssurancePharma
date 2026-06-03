@@ -15,7 +15,7 @@ def gerant_required(f):
         if not current_user.is_authenticated:
             return redirect(url_for('auth.login'))
         
-        if not hasattr(current_user, 'role') or current_user.role != 'gerant':
+        if not hasattr(current_user, 'role') or current_user.role not in ('gerant', 'co-gerant'):
             flash("Vous n'avez pas accès à cette ressource", 'error')
             return redirect(url_for('dashboard.index'))
         
@@ -45,7 +45,7 @@ def role_required(role):
     Décorateur générique pour les rôles
     
     Args:
-        role: Le rôle requis ('gerant' ou 'employee')
+        role: Le rôle requis ('gerant', 'co-gerant', ou 'employee')
     """
     def decorator(f):
         @wraps(f)
@@ -54,7 +54,7 @@ def role_required(role):
                 return redirect(url_for('auth.login'))
             
             if role == 'gerant':
-                if not hasattr(current_user, 'role') or current_user.role != 'gerant':
+                if not hasattr(current_user, 'role') or current_user.role not in ('gerant', 'co-gerant'):
                     flash("Accès refusé", 'error')
                     return redirect(url_for('dashboard.index'))
             elif role == 'employee':

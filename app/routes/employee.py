@@ -2,7 +2,7 @@ from flask import Blueprint, render_template, jsonify, redirect, url_for, flash,
 from flask_login import login_required, current_user
 from datetime import datetime, date
 from app import db
-from app.models import Sale, SaleItem, Medicine, Employee, Activity, DailyReport
+from app.models import Sale, SaleItem, Medicine, Employee, Activity, DailyReport, Category
 from app.services.report_service import ReportService
 from app.services.activity_service import ActivityService
 from flask import send_file
@@ -43,7 +43,8 @@ def medicines():
         return redirect(url_for('dashboard.index'))
 
     medicines = Medicine.query.filter_by(gerant_id=current_user.gerant_id).all()
-    return render_template('employee/medicines.html', medicines=medicines)
+    categories = Category.query.filter_by(gerant_id=current_user.gerant_id).order_by(Category.nom).all()
+    return render_template('employee/medicines.html', medicines=medicines, categories=categories)
 
 
 @employee_bp.route('/medicaments/api/list')
@@ -97,7 +98,19 @@ def report():
         'total_profit': sum(s.profit for s in today_sales),
     }
 
-    return render_template('employee/report.html', stats=stats, report_data=report_data, today=today)
+    sold_items = []
+    for sale in today_sales:
+        for item in sale.items:
+            sold_items.append({
+                'nom': item.medicine.nom if item.medicine else 'N/A',
+                'quantity': item.quantity,
+                'unit_price': item.unit_price,
+                'total': item.quantity * item.unit_price
+            })
+
+    sold_items.sort(key=lambda x: x['nom'])
+
+    return render_template('employee/report.html', stats=stats, report_data=report_data, today=today, sold_items=sold_items)
 
 
 @employee_bp.route('/api/stats')

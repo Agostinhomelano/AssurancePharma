@@ -12,9 +12,9 @@ reports_bp = Blueprint('reports', __name__, url_prefix='/reports')
 @login_required
 @gerant_required
 def index():
-    reports = DailyReport.query.filter_by(gerant_id=current_user.id).order_by(DailyReport.date.desc()).limit(30).all()
+    reports = DailyReport.query.filter_by(gerant_id=current_user.effective_gerant_id).order_by(DailyReport.date.desc()).limit(30).all()
     today = date.today()
-    today_report = DailyReport.query.filter_by(gerant_id=current_user.id, date=today).first()
+    today_report = DailyReport.query.filter_by(gerant_id=current_user.effective_gerant_id, date=today).first()
     return render_template('reports/index.html', reports=reports, today_report=today_report, today=today)
 
 @reports_bp.route('/generate/daily', methods=['POST'])
@@ -25,7 +25,7 @@ def generate_daily():
         report_date_str = request.form.get('date', str(date.today()))
         report_date = datetime.strptime(report_date_str, '%Y-%m-%d').date()
 
-        existing = DailyReport.query.filter_by(gerant_id=current_user.id, date=report_date).first()
+        existing = DailyReport.query.filter_by(gerant_id=current_user.effective_gerant_id, date=report_date).first()
         if existing:
             flash(f'Un rapport existe déjà pour le {report_date.strftime("%d/%m/%Y")}', 'warning')
             return redirect(url_for('reports.index'))
@@ -42,7 +42,7 @@ def generate_daily():
 @gerant_required
 def download_daily(report_id):
     report = DailyReport.query.get_or_404(report_id)
-    if report.gerant_id != current_user.id:
+    if report.gerant_id != current_user.effective_gerant_id:
         flash('Non autorisé', 'danger')
         return redirect(url_for('reports.index'))
 
@@ -110,7 +110,7 @@ def api_stats():
     today = date.today()
     sales = Sale.query.join(Employee).filter(
         db.func.date(Sale.created_at) == today,
-        Employee.gerant_id == current_user.id
+        Employee.gerant_id == current_user.effective_gerant_id
     ).all()
 
     return jsonify({

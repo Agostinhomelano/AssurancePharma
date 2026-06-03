@@ -13,10 +13,18 @@ class User(UserMixin, db.Model):
     role = db.Column(db.String(20), default='gerant', nullable=False)
     actif = db.Column(db.Boolean, default=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    parent_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+
+    @property
+    def effective_gerant_id(self):
+        return self.parent_id or self.id
+
     medicines = db.relationship('Medicine', backref='gerant', lazy=True)
     suppliers = db.relationship('Supplier', backref='gerant', lazy=True)
     employees = db.relationship('Employee', backref='gerant', lazy=True)
     activities = db.relationship('Activity', backref='user', lazy=True)
+    categories = db.relationship('Category', backref='gerant', lazy=True)
+    photo = db.Column(db.String(255))
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -41,6 +49,7 @@ class Employee(UserMixin, db.Model):
     gerant_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    photo = db.Column(db.String(255))
     sales = db.relationship('Sale', backref='employee', lazy=True)
 
     def set_password(self, password):
@@ -76,6 +85,7 @@ class Medicine(db.Model):
     prix_vente = db.Column(db.Float, nullable=False)
     quantite = db.Column(db.Integer, default=0)
     stock_minimum = db.Column(db.Integer, default=10)
+    date_expiration = db.Column(db.Date)
     gerant_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     fournisseur_id = db.Column(db.Integer, db.ForeignKey('suppliers.id'))
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
@@ -205,3 +215,13 @@ class DailyReport(db.Model):
             'medicines_out_of_stock': self.medicines_out_of_stock,
             'medicines_expiring': self.medicines_expiring
         }
+
+class Category(db.Model):
+    __tablename__ = 'categories'
+    id = db.Column(db.Integer, primary_key=True)
+    nom = db.Column(db.String(100), nullable=False)
+    gerant_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def to_dict(self):
+        return {'id': self.id, 'nom': self.nom}

@@ -20,21 +20,21 @@
     <div class="col-6 col-md-3">
       <div class="stat-card">
         <div class="stat-icon bg-info"><i class="fas fa-money-bill-wave"></i></div>
-        <h3>{{ "%.0f"|format(stats.total_amount) }} F</h3>
+        <h3>{{ "%.0f"|format(stats.total_amount) }} FC</h3>
         <h6>Montant</h6>
       </div>
     </div>
     <div class="col-6 col-md-3">
       <div class="stat-card">
         <div class="stat-icon bg-secondary"><i class="fas fa-coins"></i></div>
-        <h3>{{ "%.0f"|format(stats.total_cost) }} F</h3>
+        <h3>{{ "%.0f"|format(stats.total_cost) }} FC</h3>
         <h6>Coût total</h6>
       </div>
     </div>
     <div class="col-6 col-md-3">
       <div class="stat-card">
         <div class="stat-icon bg-warning"><i class="fas fa-gem"></i></div>
-        <h3>{{ "%.0f"|format(stats.total_profit) }} F</h3>
+        <h3>{{ "%.0f"|format(stats.total_profit) }} FC</h3>
         <h6>Bénéfice</h6>
       </div>
     </div>
@@ -78,22 +78,54 @@
         <div class="col-sm-6">
           <div class="d-flex justify-content-between py-1 border-bottom small">
             <span class="text-muted">Montant total</span>
-            <strong>{{ "%.0f"|format(stats.total_amount) }} FCFA</strong>
+            <strong>{{ "%.0f"|format(stats.total_amount) }} FC</strong>
           </div>
         </div>
         <div class="col-sm-6">
           <div class="d-flex justify-content-between py-1 border-bottom small">
             <span class="text-muted">Coût total</span>
-            <strong>{{ "%.0f"|format(stats.total_cost) }} FCFA</strong>
+            <strong>{{ "%.0f"|format(stats.total_cost) }} FC</strong>
           </div>
         </div>
         <div class="col-sm-6">
           <div class="d-flex justify-content-between py-1 border-bottom small">
             <span class="text-muted">Bénéfice net</span>
-            <strong class="text-success">{{ "%.0f"|format(stats.total_profit) }} FCFA</strong>
+            <strong class="text-success">{{ "%.0f"|format(stats.total_profit) }} FC</strong>
           </div>
         </div>
       </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header"><i class="fas fa-list"></i> Produits vendus aujourd'hui</div>
+    <div class="card-body p-0">
+      {% if sold_items %}
+      <div class="table-responsive">
+        <table class="table table-sm mb-0">
+          <thead>
+            <tr>
+              <th>Produit</th>
+              <th>Qté</th>
+              <th>P.U.</th>
+              <th>Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for item in sold_items %}
+            <tr class="small">
+              <td>{{ item.nom }}</td>
+              <td>{{ item.quantity }}</td>
+              <td>{{ "%.0f"|format(item.unit_price) }} FC</td>
+              <td>{{ "%.0f"|format(item.total) }} FC</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <p class="text-muted text-center mb-0 py-3">Aucun produit vendu aujourd'hui.</p>
+      {% endif %}
     </div>
   </div>
 </div>

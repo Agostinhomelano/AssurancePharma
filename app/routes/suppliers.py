@@ -18,7 +18,7 @@ suppliers_bp = Blueprint('suppliers', __name__, url_prefix='/suppliers')
 def list_suppliers():
     """Liste tous les fournisseurs"""
     page = request.args.get('page', 1, type=int)
-    suppliers = Supplier.query.filter_by(gerant_id=current_user.id).paginate(page=page, per_page=20)
+    suppliers = Supplier.query.filter_by(gerant_id=current_user.effective_gerant_id).paginate(page=page, per_page=20)
     return render_template('suppliers/list.html', suppliers=suppliers)
 
 @suppliers_bp.route('/api/list')
@@ -26,7 +26,7 @@ def list_suppliers():
 @gerant_required
 def api_list_suppliers():
     """API: Liste des fournisseurs"""
-    suppliers = Supplier.query.filter_by(gerant_id=current_user.id).all()
+    suppliers = Supplier.query.filter_by(gerant_id=current_user.effective_gerant_id).all()
     return jsonify([s.to_dict() for s in suppliers])
 
 @suppliers_bp.route('/create', methods=['GET', 'POST'])
@@ -51,7 +51,7 @@ def create_supplier():
                 email=data.get('email', ''),
                 adresse=data.get('adresse', ''),
                 responsable=data.get('responsable', ''),
-                gerant_id=current_user.id
+                gerant_id=current_user.effective_gerant_id
             )
             
             db.session.add(supplier)
@@ -80,7 +80,7 @@ def edit_supplier(supplier_id):
     """Modifier un fournisseur"""
     supplier = Supplier.query.get_or_404(supplier_id)
     
-    if supplier.gerant_id != current_user.id:
+    if supplier.gerant_id != current_user.effective_gerant_id:
         flash("Non autorisé", 'error')
         return redirect(url_for('suppliers.list_suppliers'))
     
@@ -119,7 +119,7 @@ def delete_supplier(supplier_id):
     """Supprimer un fournisseur"""
     supplier = Supplier.query.get_or_404(supplier_id)
     
-    if supplier.gerant_id != current_user.id:
+    if supplier.gerant_id != current_user.effective_gerant_id:
         flash("Non autorisé", 'error')
         return redirect(url_for('suppliers.list_suppliers'))
     
@@ -148,7 +148,7 @@ def get_supplier(supplier_id):
     """API: Récupère un fournisseur"""
     supplier = Supplier.query.get_or_404(supplier_id)
     
-    if supplier.gerant_id != current_user.id:
+    if supplier.gerant_id != current_user.effective_gerant_id:
         return jsonify({'error': 'Non autorisé'}), 403
     
     return jsonify(supplier.to_dict())

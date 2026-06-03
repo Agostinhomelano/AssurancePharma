@@ -60,8 +60,8 @@ class ReportService:
 
         summary_data = [
             ('Total Ventes', total_sales),
-            ('Montant Total (FCFA)', total_amount),
-            ('Bénéfice Total (FCFA)', total_profit),
+            ('Montant Total (FC)', total_amount),
+            ('Bénéfice Total (FC)', total_profit),
             ('Médicaments en Stock Faible', len(low_stock)),
             ('Médicaments proche Expiration', len(expiring)),
             ('Nombre d\'Employés', len(employees) if employees else 0),
@@ -80,7 +80,7 @@ class ReportService:
 
         # Sheet 2: Ventes détaillées
         ws_sales = wb.create_sheet("Ventes")
-        headers = ['ID', 'Employé', 'Montant (FCFA)', 'Coût', 'Bénéfice', 'Méthode', 'Date']
+        headers = ['ID', 'Employé', 'Montant (FC)', 'Coût', 'Bénéfice', 'Méthode', 'Date']
         for col, header in enumerate(headers, 1):
             cell = ws_sales.cell(row=1, column=col, value=header)
             cell.font = header_font
@@ -194,9 +194,9 @@ class ReportService:
         total_profit = sum(s.profit for s in sales)
         summary = [
             ('Nombre de ventes', len(sales)),
-            ('Montant total (FCFA)', total_amount),
-            ('Bénéfice total (FCFA)', total_profit),
-            ('Moyenne par vente (FCFA)', total_amount / len(sales) if sales else 0),
+            ('Montant total (FC)', total_amount),
+            ('Bénéfice total (FC)', total_profit),
+            ('Moyenne par vente (FC)', total_amount / len(sales) if sales else 0),
         ]
         for i, (label, value) in enumerate(summary, start=3):
             ws[f'A{i}'] = label
