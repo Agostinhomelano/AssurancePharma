@@ -31,15 +31,6 @@ pip install -r requirements.txt
 python run.py
 ```
 
-Ouvrir http://localhost:5000
-
-## Identifiants de test
-
-| Role | Email | Mot de passe |
-|------|-------|-------------|
-| Gerant | gerant@pharma.com | admin123 |
-| Employe | jean.dupont@pharma.com | emp123 |
-| Employe | marie.martin@pharma.com | emp123 |
 
 ## Architecture
 
