@@ -182,14 +182,21 @@ class Activity(db.Model):
     __tablename__ = 'activities'
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    employee_id = db.Column(db.Integer, db.ForeignKey('employees.id'))
     action = db.Column(db.String(200), nullable=False)
     details = db.Column(db.Text)
     created_at = db.Column(db.DateTime, default=datetime.utcnow, index=True)
+    employee_ref = db.relationship('Employee', backref='activities', lazy=True)
 
     def to_dict(self):
+        actor = None
+        if self.employee_ref:
+            actor = self.employee_ref.prenom + ' ' + self.employee_ref.nom
+        elif self.user:
+            actor = self.user.prenom + ' ' + self.user.nom
         return {
             'id': self.id,
-            'user_name': (self.user.prenom + ' ' + self.user.nom) if self.user else 'Système',
+            'user_name': actor or 'Système',
             'action': self.action, 'details': self.details,
             'created_at': self.created_at.isoformat()
         }

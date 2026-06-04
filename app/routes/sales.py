@@ -66,7 +66,8 @@ def api_create_sale():
         ActivityService.log_activity(
             user_id,
             f"Nouvelle vente ({len(items)} articles)",
-            f"Total: {sale.total_amount} FC, Bénéfice: {sale.profit} FC"
+            f"Total: {sale.total_amount} FC, Bénéfice: {sale.profit} FC",
+            employee_id=employee_id
         )
 
         return jsonify({

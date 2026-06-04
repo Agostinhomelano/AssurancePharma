@@ -57,9 +57,10 @@ def create_app(config_name='development'):
     app.register_blueprint(employee_bp)
     app.register_blueprint(categories_bp)
     
-    # Création des tables
+    # Création des tables + migrations
     with app.app_context():
         db.create_all()
+        migrate_database()
         init_database()
     
     return app
@@ -159,3 +160,19 @@ def init_database():
         db.session.commit()
         
         print("Base de donnees initialisee avec succes!")
+
+def migrate_database():
+    """Migrations progressives sans perte de données"""
+    from app import db
+    from sqlalchemy import inspect
+    import os
+    
+    try:
+        inspector = inspect(db.engine)
+        columns = [c['name'] for c in inspector.get_columns('activities')]
+        if 'employee_id' not in columns:
+            db.session.execute(db.text('ALTER TABLE activities ADD COLUMN employee_id INTEGER REFERENCES employees(id)'))
+            db.session.commit()
+            print("Migration: colonne employee_id ajoutée à activities")
+    except Exception:
+        pass  # Table peut ne pas encore exister

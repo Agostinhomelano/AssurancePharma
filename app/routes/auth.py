@@ -67,6 +67,32 @@ def profil():
     if request.method == 'POST':
         action = request.form.get('action', '')
         
+        if action == 'info':
+            nom = request.form.get('nom', '').strip()
+            prenom = request.form.get('prenom', '').strip()
+            email = request.form.get('email', '').strip()
+            telephone = request.form.get('telephone', '').strip()
+            if not nom or not prenom or not email:
+                flash('Nom, prénom et email sont requis.', 'danger')
+            else:
+                current_user.nom = nom
+                current_user.prenom = prenom
+                if email != current_user.email:
+                    existing = User.query.filter_by(email=email).first()
+                    if existing and existing.id != current_user.id:
+                        flash('Cet email est déjà utilisé.', 'danger')
+                        return redirect(url_for('auth.profil'))
+                    existing_emp = Employee.query.filter_by(email=email).first()
+                    if existing_emp and (not hasattr(current_user, 'fonction') or existing_emp.id != current_user.id):
+                        flash('Cet email est déjà utilisé.', 'danger')
+                        return redirect(url_for('auth.profil'))
+                    current_user.email = email
+                if hasattr(current_user, 'telephone'):
+                    current_user.telephone = telephone
+                db.session.commit()
+                flash('Informations mises à jour.', 'success')
+            return redirect(url_for('auth.profil'))
+        
         if action == 'password':
             old_pw = request.form.get('old_password', '')
             new_pw = request.form.get('new_password', '')

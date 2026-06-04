@@ -166,8 +166,10 @@ def api_create_medicine():
     """API: Créer un médicament (gérant + employé)"""
     if hasattr(current_user, 'fonction'):
         gerant_id = current_user.gerant_id
+        employee_id = current_user.id
     else:
         gerant_id = current_user.id
+        employee_id = None
         if current_user.role not in ('gerant', 'co-gerant'):
             return jsonify({'error': 'Non autorisé'}), 403
 
@@ -195,7 +197,8 @@ def api_create_medicine():
         ActivityService.log_activity(
             gerant_id,
             f"Créé le médicament: {medicine.nom}",
-            f"Prix: {medicine.prix_vente} FC"
+            f"Prix: {medicine.prix_vente} FC",
+            employee_id=employee_id
         )
         flash(f"Médicament {medicine.nom} créé", 'success')
     except Exception:

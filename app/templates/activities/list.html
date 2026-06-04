@@ -13,6 +13,7 @@
             <tr>
               <th>Date</th>
               <th>Action</th>
+              <th class="d-none d-sm-table-cell">Par</th>
               <th class="d-none d-sm-table-cell">Détails</th>
             </tr>
           </thead>
@@ -21,6 +22,15 @@
             <tr>
               <td class="small text-nowrap">{{ a.created_at.strftime('%d/%m %H:%M') if a.created_at else '-' }}</td>
               <td class="small">{{ a.action }}</td>
+              <td class="d-none d-sm-table-cell small">
+                {% if a.employee_ref %}
+                  <span class="badge bg-info">{{ a.employee_ref.prenom }} {{ a.employee_ref.nom }}</span>
+                {% elif a.user %}
+                  <span class="badge bg-primary">{{ a.user.prenom }} {{ a.user.nom }}</span>
+                {% else %}
+                  <span class="text-muted">Système</span>
+                {% endif %}
+              </td>
               <td class="d-none d-sm-table-cell small text-muted">{{ a.details or '' }}</td>
             </tr>
             {% endfor %}

@@ -10,18 +10,20 @@ class ActivityService:
     """Service pour enregistrer et gérer les activités"""
     
     @staticmethod
-    def log_activity(user_id, action, details=None):
+    def log_activity(user_id, action, details=None, employee_id=None):
         """
         Enregistre une activité
         
         Args:
-            user_id: ID de l'utilisateur
+            user_id: ID de l'utilisateur (gérant)
             action: Description de l'action
             details: Détails supplémentaires (JSON)
+            employee_id: ID de l'employé (si l'action vient d'un employé)
         """
         try:
             activity = Activity(
                 user_id=user_id,
+                employee_id=employee_id,
                 action=action,
                 details=details
             )

@@ -68,8 +68,8 @@ def activities():
         return redirect(url_for('dashboard.index'))
 
     today = date.today()
-    recent_activities = Activity.query.filter(
-        db.func.date(Activity.created_at) == today
+    recent_activities = Activity.query.filter_by(
+        employee_id=current_user.id
     ).order_by(Activity.created_at.desc()).limit(50).all()
 
     return render_template('employee/activities.html', activities=recent_activities, today=today)
