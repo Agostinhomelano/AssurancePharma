@@ -31,12 +31,12 @@ wheels/
 *~
 .DS_Store
 
-Base de données
-*.db
-*.sqlite
-*.sqlite3
-backend/instance/pharma.db
-instance/assurance_pharma.db
+# #Base de données
+# *.db
+# *.sqlite
+# *.sqlite3
+# backend/instance/pharma.db
+# instance/assurance_pharma.db
 
 # Variables d'environnement
 .env
