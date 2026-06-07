@@ -39,12 +39,18 @@
               </td>
               <td>{{ co.created_at.strftime('%d/%m/%Y') }}</td>
               <td>
-                <form method="POST" action="{{ url_for('auth.toggle_co_gerant', id=co.id) }}" onsubmit="return confirm('{{ "Désactiver" if co.actif else "Activer" }} ce co-gérant ?')">
+                <div class="action-group">
+                  <a href="{{ url_for('auth.edit_co_gerant', id=co.id) }}" class="btn btn-warning btn-action" title="Modifier"><i class="fas fa-edit"></i></a>
+                  <form method="POST" action="{{ url_for('auth.toggle_co_gerant', id=co.id) }}" onsubmit="return confirm('{{ "Désactiver" if co.actif else "Activer" }} ce co-gérant ?')">
                   <input type="hidden" name="csrf_token" value="">
                   <button type="submit" class="btn btn-sm btn-{{ 'warning' if co.actif else 'success' }}" title="{{ 'Désactiver' if co.actif else 'Activer' }}">
                     <i class="fas fa-{{ 'ban' if co.actif else 'check' }}"></i>
                   </button>
                 </form>
+                  <form method="POST" action="{{ url_for('auth.delete_co_gerant', id=co.id) }}" class="d-inline" onsubmit="return confirm('Supprimer définitivement {{ co.prenom }} {{ co.nom }} ?')">
+                    <button type="submit" class="btn btn-danger btn-action" title="Supprimer"><i class="fas fa-trash"></i></button>
+                  </form>
+                </div>
               </td>
             </tr>
             {% else %}

@@ -2,7 +2,7 @@ const CACHE = 'assurance-pharma-v1';
 
 const ASSETS = [
   '/static/css/style.css',
-  '/static/icons/Coupe_d_Hygie.png'
+  '/static/icons/Coupe_Hygie2.png'
 ];
 
 self.addEventListener('install', event => {

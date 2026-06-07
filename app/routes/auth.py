@@ -186,3 +186,57 @@ def toggle_co_gerant(id):
     status = 'activé' if co.actif else 'désactivé'
     flash(f'Co-gérant "{co.prenom} {co.nom}" {status}.', 'success')
     return redirect(url_for('auth.list_co_gerants'))
+
+@auth_bp.route('/co-gerants/<int:id>/modifier', methods=['GET', 'POST'])
+@login_required
+def edit_co_gerant(id):
+    if not hasattr(current_user, 'role') or current_user.role != 'gerant':
+        flash('Accès réservé au gérant principal.', 'danger')
+        return redirect(url_for('dashboard.index'))
+    co = User.query.filter_by(id=id, parent_id=current_user.id, role='co-gerant').first_or_404()
+    if request.method == 'POST':
+        nom = request.form.get('nom', '').strip()
+        prenom = request.form.get('prenom', '').strip()
+        email = request.form.get('email', '').strip()
+        password = request.form.get('password', '')
+        if not nom or not prenom or not email:
+            flash('Nom, prénom et email sont requis.', 'danger')
+        else:
+            if email != co.email:
+                if User.query.filter_by(email=email).first():
+                    flash('Cet email est déjà utilisé.', 'danger')
+                    return redirect(url_for('auth.edit_co_gerant', id=id))
+                emp = Employee.query.filter_by(email=email).first()
+                if emp:
+                    flash('Cet email est déjà utilisé.', 'danger')
+                    return redirect(url_for('auth.edit_co_gerant', id=id))
+            co.nom = nom
+            co.prenom = prenom
+            co.email = email
+            if password:
+                if len(password) < 4:
+                    flash('Le mot de passe doit faire au moins 4 caractères.', 'danger')
+                    return redirect(url_for('auth.edit_co_gerant', id=id))
+                co.set_password(password)
+            db.session.add(Activity(
+                user_id=current_user.id,
+                action='Modification co-gérant',
+                details=f'Co-gérant "{prenom} {nom}" modifié'
+            ))
+            db.session.commit()
+            flash(f'Co-gérant "{prenom} {nom}" mis à jour.', 'success')
+            return redirect(url_for('auth.list_co_gerants'))
+    return render_template('auth/co_gerant_form.html', co=co, edit=True)
+
+@auth_bp.route('/co-gerants/<int:id>/supprimer', methods=['POST'])
+@login_required
+def delete_co_gerant(id):
+    if not hasattr(current_user, 'role') or current_user.role != 'gerant':
+        flash('Accès réservé au gérant principal.', 'danger')
+        return redirect(url_for('dashboard.index'))
+    co = User.query.filter_by(id=id, parent_id=current_user.id, role='co-gerant').first_or_404()
+    nom_complet = f"{co.prenom} {co.nom}"
+    db.session.delete(co)
+    db.session.commit()
+    flash(f'Co-gérant "{nom_complet}" supprimé.', 'success')
+    return redirect(url_for('auth.list_co_gerants'))
