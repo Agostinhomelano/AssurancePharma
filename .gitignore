@@ -35,7 +35,8 @@ wheels/
 *.db
 *.sqlite
 *.sqlite3
-pharma.db
+backend/instance/pharma.db
+instance/assurance_pharma.db
 
 # Variables d'environnement
 .env

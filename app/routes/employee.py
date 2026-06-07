@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, jsonify, redirect, url_for, flash, request
 from flask_login import login_required, current_user
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
 from app import db
 from app.models import Sale, SaleItem, Medicine, Employee, Activity, DailyReport, Category
 from app.services.report_service import ReportService
@@ -113,6 +113,26 @@ def report():
     return render_template('employee/report.html', stats=stats, report_data=report_data, today=today, sold_items=sold_items)
 
 
+@employee_bp.route('/api/sales-evolution')
+@login_required
+def api_sales_evolution():
+    if hasattr(current_user, 'role'):
+        return jsonify({'error': 'Non autorisé'}), 403
+
+    data = []
+    for i in range(6, -1, -1):
+        day = (date.today() - timedelta(days=i))
+        sales = Sale.query.filter(
+            db.func.date(Sale.created_at) == day,
+            Sale.employee_id == current_user.id
+        ).all()
+        data.append({
+            'date': day.strftime('%a'),
+            'amount': sum(s.total_amount for s in sales)
+        })
+    return jsonify(data)
+
+
 @employee_bp.route('/api/stats')
 @login_required
 def api_stats():
@@ -122,7 +142,7 @@ def api_stats():
     today = date.today()
     today_sales = Sale.query.filter(
         db.func.date(Sale.created_at) == today,
-        Employee.id == current_user.id
+        Sale.employee_id == current_user.id
     ).all()
 
     medicines = Medicine.query.filter_by(gerant_id=current_user.gerant_id).all()

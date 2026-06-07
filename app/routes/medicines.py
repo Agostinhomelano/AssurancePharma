@@ -50,10 +50,15 @@ def create_medicine():
             for error in errors:
                 flash(error, 'error')
             return redirect(url_for('medicines.create_medicine'))
-        
+
+        nom = data.get('nom', '').strip()
+        if Medicine.query.filter_by(nom=nom, gerant_id=current_user.effective_gerant_id).first():
+            flash(f'Le médicament "{nom}" existe déjà.', 'error')
+            return redirect(url_for('medicines.create_medicine'))
+
         try:
             medicine = Medicine(
-                nom=data.get('nom'),
+                nom=nom,
                 categorie=data.get('categorie'),
                 description=data.get('description', ''),
                 prix_achat=float(data.get('prix_achat')),
@@ -100,8 +105,14 @@ def edit_medicine(medicine_id):
     if request.method == 'POST':
         data = request.form.to_dict()
         
+        new_nom = data.get('nom', '').strip()
+        if new_nom != medicine.nom:
+            if Medicine.query.filter_by(nom=new_nom, gerant_id=current_user.effective_gerant_id).first():
+                flash(f'Le médicament "{new_nom}" existe déjà.', 'error')
+                return redirect(url_for('medicines.edit_medicine', medicine_id=medicine.id))
+
         try:
-            medicine.nom = data.get('nom')
+            medicine.nom = new_nom
             medicine.categorie = data.get('categorie')
             medicine.description = data.get('description', '')
             medicine.prix_achat = float(data.get('prix_achat'))
@@ -179,9 +190,15 @@ def api_create_medicine():
         flash('; '.join(errors), 'error')
         return redirect(url_for('employee.medicines' if hasattr(current_user, 'fonction') else 'medicines.list_medicines'))
 
+    nom = data.get('nom', '').strip()
+    existing = Medicine.query.filter_by(nom=nom, gerant_id=gerant_id).first()
+    if existing:
+        flash(f'Le médicament "{nom}" existe déjà.', 'error')
+        return redirect(url_for('employee.medicines' if hasattr(current_user, 'fonction') else 'medicines.list_medicines'))
+
     try:
         medicine = Medicine(
-            nom=data.get('nom'),
+            nom=nom,
             categorie=data.get('categorie'),
             description=data.get('description', ''),
             prix_achat=float(data.get('prix_achat')),

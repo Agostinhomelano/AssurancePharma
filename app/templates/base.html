@@ -3,16 +3,19 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <meta name="theme-color" content="#198754" />
+    <meta name="theme-color" content="#0d281a" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="apple-mobile-web-app-title" content="Pharma" />
     <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}" />
-    <link rel="icon" href="{{ url_for('static', filename='icons/icon-192.svg') }}" sizes="192x192" />
-    <link rel="apple-touch-icon" href="{{ url_for('static', filename='icons/icon-192.svg') }}" />
+    <link rel="icon" href="{{ url_for('static', filename='icons/Coupe_d_Hygie.png') }}" sizes="192x192" />
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='icons/Coupe_d_Hygie.png') }}" />
     <title>{% block title %}AssurancePharma{% endblock %}</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
     {% block extra_css %}{% endblock %}
   </head>
@@ -25,10 +28,10 @@
           <i class="fas fa-bars"></i>
         </button>
         {% endif %}
-        <a class="navbar-brand" href="{% if current_user.is_authenticated %}{% if current_user.role is defined and current_user.role in ('gerant', 'co-gerant') %}{{ url_for('dashboard.index') }}{% else %}{{ url_for('employee.index') }}{% endif %}{% else %}{{ url_for('auth.login') }}{% endif %}">
-          <span class="logo-icon"><i class="fas fa-mortar-pestle"></i></span>
+        <span class="navbar-brand">
+          <img src="{{ url_for('static', filename='icons/Coupe_Hygie2.png') }}" alt="Logo" class="logo-img">
           <span class="brand-text">AssurancePharma</span>
-        </a>
+        </span>
         <div class="collapse navbar-collapse" id="navbarNav">
           <ul class="navbar-nav ms-auto align-items-center">
             {% if current_user.is_authenticated %}
@@ -38,17 +41,9 @@
                 <span class="d-none d-md-inline">{{ current_user.prenom }} {{ current_user.nom }}</span>
               </a>
             </li>
-            <li class="nav-item">
-              <a class="nav-link" href="{{ url_for('auth.logout') }}"><i class="fas fa-sign-out-alt"></i> <span class="d-none d-md-inline">Déconnexion</span></a>
-            </li>
             {% endif %}
           </ul>
         </div>
-        {% if current_user.is_authenticated %}
-        <a class="nav-link text-white d-lg-none p-0 ms-2 logout-mobile" href="{{ url_for('auth.logout') }}">
-          <i class="fas fa-sign-out-alt"></i>
-        </a>
-        {% endif %}
       </div>
     </nav>
 
@@ -57,7 +52,7 @@
     <div class="offcanvas offcanvas-start offcanvas-sidebar" tabindex="-1" id="mobileSidebar">
       <div class="offcanvas-header border-bottom border-secondary">
         <h5 class="offcanvas-title text-white">
-          <span class="logo-icon"><i class="fas fa-mortar-pestle"></i></span> Menu
+          <img src="{{ url_for('static', filename='icons/Coupe_Hygie2.png') }}" class="logo-img" style="width:28px;height:28px;margin-right:8px;"> Menu
         </h5>
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas"></button>
       </div>
@@ -79,34 +74,18 @@
             {% endif %}
           </small>
         </div>
-        <div class="sidebar-section">Navigation</div>
+        <div class="sidebar-section">Plus</div>
 
         {% if current_user.role is defined and current_user.role in ('gerant', 'co-gerant') %}
-        <!-- Gerant menu -->
-        <a class="nav-link {% if request.endpoint == 'dashboard.index' %}active{% endif %}" href="{{ url_for('dashboard.index') }}" onclick="setTimeout(()=>{let b=document.querySelector('[data-bs-dismiss=offcanvas]');if(b)b.click()},100)"><i class="fas fa-home"></i> Dashboard</a>
-        <a class="nav-link {% if request.endpoint and request.endpoint.startswith('medicines.') %}active{% endif %}" href="{{ url_for('medicines.list_medicines') }}" onclick="setTimeout(()=>{let b=document.querySelector('[data-bs-dismiss=offcanvas]');if(b)b.click()},100)"><i class="fas fa-pills"></i> Médicaments</a>
         <a class="nav-link {% if request.endpoint and request.endpoint.startswith('suppliers.') %}active{% endif %}" href="{{ url_for('suppliers.list_suppliers') }}" onclick="setTimeout(()=>{let b=document.querySelector('[data-bs-dismiss=offcanvas]');if(b)b.click()},100)"><i class="fas fa-truck"></i> Fournisseurs</a>
-        <a class="nav-link {% if request.endpoint and request.endpoint.startswith('sales.') %}active{% endif %}" href="{{ url_for('sales.list_sales') }}" onclick="setTimeout(()=>{let b=document.querySelector('[data-bs-dismiss=offcanvas]');if(b)b.click()},100)"><i class="fas fa-shopping-cart"></i> Ventes</a>
-        <div class="sidebar-section">Gestion</div>
-        <a class="nav-link {% if request.endpoint and request.endpoint.startswith('employees.') %}active{% endif %}" href="{{ url_for('employees.list_employees') }}" onclick="setTimeout(()=>{let b=document.querySelector('[data-bs-dismiss=offcanvas]');if(b)b.click()},100)"><i class="fas fa-users"></i> Employés</a>
         <a class="nav-link {% if request.endpoint and request.endpoint.startswith('reports.') %}active{% endif %}" href="{{ url_for('reports.index') }}" onclick="setTimeout(()=>{let b=document.querySelector('[data-bs-dismiss=offcanvas]');if(b)b.click()},100)"><i class="fas fa-file-excel"></i> Rapports</a>
         <a class="nav-link {% if request.endpoint and request.endpoint.startswith('activities.') %}active{% endif %}" href="{{ url_for('activities.list_activities') }}" onclick="setTimeout(()=>{let b=document.querySelector('[data-bs-dismiss=offcanvas]');if(b)b.click()},100)"><i class="fas fa-history"></i> Activités</a>
         <a class="nav-link {% if request.endpoint and request.endpoint.startswith('categories.') %}active{% endif %}" href="{{ url_for('categories.list_categories') }}" onclick="setTimeout(()=>{let b=document.querySelector('[data-bs-dismiss=offcanvas]');if(b)b.click()},100)"><i class="fas fa-tags"></i> Catégories</a>
         {% if current_user.role == 'gerant' %}
         <a class="nav-link {% if request.endpoint and 'co_gerant' in request.endpoint %}active{% endif %}" href="{{ url_for('auth.list_co_gerants') }}" onclick="setTimeout(()=>{let b=document.querySelector('[data-bs-dismiss=offcanvas]');if(b)b.click()},100)"><i class="fas fa-user-friends"></i> Co-gérants</a>
         {% endif %}
-        <hr class="border-secondary my-1">
-        <a class="nav-link {% if request.endpoint == 'auth.profil' %}active{% endif %}" href="{{ url_for('auth.profil') }}" onclick="setTimeout(()=>{let b=document.querySelector('[data-bs-dismiss=offcanvas]');if(b)b.click()},100)"><i class="fas fa-user-cog"></i> Mon Profil</a>
         {% else %}
-        <!-- Employee menu -->
-        <a class="nav-link {% if request.endpoint == 'employee.index' %}active{% endif %}" href="{{ url_for('employee.index') }}" onclick="setTimeout(()=>{let b=document.querySelector('[data-bs-dismiss=offcanvas]');if(b)b.click()},100)"><i class="fas fa-home"></i> Accueil</a>
-        <a class="nav-link {% if request.endpoint == 'sales.sales_interface' %}active{% endif %}" href="{{ url_for('sales.sales_interface') }}" onclick="setTimeout(()=>{let b=document.querySelector('[data-bs-dismiss=offcanvas]');if(b)b.click()},100)"><i class="fas fa-shopping-cart"></i> Ventes</a>
-        <a class="nav-link {% if request.endpoint == 'employee.medicines' %}active{% endif %}" href="{{ url_for('employee.medicines') }}" onclick="setTimeout(()=>{let b=document.querySelector('[data-bs-dismiss=offcanvas]');if(b)b.click()},100)"><i class="fas fa-pills"></i> Médicaments</a>
-        <a class="nav-link {% if request.endpoint == 'employee.activities' %}active{% endif %}" href="{{ url_for('employee.activities') }}" onclick="setTimeout(()=>{let b=document.querySelector('[data-bs-dismiss=offcanvas]');if(b)b.click()},100)"><i class="fas fa-history"></i> Activités</a>
-        <div class="sidebar-section">Rapports</div>
         <a class="nav-link {% if request.endpoint == 'employee.report' %}active{% endif %}" href="{{ url_for('employee.report') }}" onclick="setTimeout(()=>{let b=document.querySelector('[data-bs-dismiss=offcanvas]');if(b)b.click()},100)"><i class="fas fa-file-excel"></i> Rapport journalier</a>
-        <hr class="border-secondary my-1">
-        <a class="nav-link {% if request.endpoint == 'auth.profil' %}active{% endif %}" href="{{ url_for('auth.profil') }}" onclick="setTimeout(()=>{let b=document.querySelector('[data-bs-dismiss=offcanvas]');if(b)b.click()},100)"><i class="fas fa-user-cog"></i> Mon Profil</a>
         {% endif %}
       </div>
     </div>
@@ -150,7 +129,7 @@
         <a class="nav-link {% if request.endpoint and 'co_gerant' in request.endpoint %}active{% endif %}" href="{{ url_for('auth.list_co_gerants') }}"><i class="fas fa-user-friends"></i> Co-gérants</a>
         {% endif %}
         <hr class="border-secondary my-1">
-        <a class="nav-link {% if request.endpoint == 'auth.profil' %}active{% endif %}" href="{{ url_for('auth.profil') }}"><i class="fas fa-user-cog"></i> Mon Profil</a>
+        <a class="nav-link {% if request.endpoint == 'auth.profil' %}active{% endif %}" href="{{ url_for('auth.profil') }}"><i class="fas fa-user-cog"></i> Paramètres</a>
         {% else %}
         <!-- Employee sidebar -->
         <a class="nav-link {% if request.endpoint == 'employee.index' %}active{% endif %}" href="{{ url_for('employee.index') }}"><i class="fas fa-home"></i> Accueil</a>
@@ -160,7 +139,7 @@
         <div class="sidebar-section">Rapports</div>
         <a class="nav-link {% if request.endpoint == 'employee.report' %}active{% endif %}" href="{{ url_for('employee.report') }}"><i class="fas fa-file-excel"></i> Rapport journalier</a>
         <hr class="border-secondary my-1">
-        <a class="nav-link {% if request.endpoint == 'auth.profil' %}active{% endif %}" href="{{ url_for('auth.profil') }}"><i class="fas fa-user-cog"></i> Mon Profil</a>
+        <a class="nav-link {% if request.endpoint == 'auth.profil' %}active{% endif %}" href="{{ url_for('auth.profil') }}"><i class="fas fa-user-cog"></i> Paramètres</a>
         {% endif %}
       </div>
       <div class="main-content">
@@ -198,5 +177,65 @@
           .catch(function(err) { console.log('SW erreur:', err); });
       }
     </script>
+
+    {% if current_user.is_authenticated %}
+    <!-- Mobile Bottom Navigation -->
+    <div class="bottom-nav d-lg-none">
+      {% if current_user.role is defined and current_user.role in ('gerant', 'co-gerant') %}
+      {% if request.endpoint != 'dashboard.index' %}
+      <a href="{{ url_for('dashboard.index') }}">
+        <i class="fas fa-home"></i><span>Accueil</span>
+      </a>
+      {% endif %}
+      {% if not request.endpoint or not request.endpoint.startswith('medicines.') %}
+      <a href="{{ url_for('medicines.list_medicines') }}">
+        <i class="fas fa-pills"></i><span>Médicaments</span>
+      </a>
+      {% endif %}
+      {% if not request.endpoint or not request.endpoint.startswith('sales.') %}
+      <a href="{{ url_for('sales.list_sales') }}">
+        <i class="fas fa-shopping-cart"></i><span>Ventes</span>
+      </a>
+      {% endif %}
+      {% if not request.endpoint or not request.endpoint.startswith('employees.') %}
+      <a href="{{ url_for('employees.list_employees') }}">
+        <i class="fas fa-users"></i><span>Employés</span>
+      </a>
+      {% endif %}
+      {% if request.endpoint != 'auth.profil' %}
+      <a href="{{ url_for('auth.profil') }}">
+        <i class="fas fa-cog"></i><span>Paramètres</span>
+      </a>
+      {% endif %}
+      {% else %}
+      {% if request.endpoint != 'employee.index' %}
+      <a href="{{ url_for('employee.index') }}">
+        <i class="fas fa-home"></i><span>Accueil</span>
+      </a>
+      {% endif %}
+      {% if request.endpoint != 'sales.sales_interface' %}
+      <a href="{{ url_for('sales.sales_interface') }}">
+        <i class="fas fa-shopping-cart"></i><span>Ventes</span>
+      </a>
+      {% endif %}
+      {% if request.endpoint != 'employee.medicines' %}
+      <a href="{{ url_for('employee.medicines') }}">
+        <i class="fas fa-pills"></i><span>Médicaments</span>
+      </a>
+      {% endif %}
+      {% if request.endpoint != 'employee.activities' %}
+      <a href="{{ url_for('employee.activities') }}">
+        <i class="fas fa-history"></i><span>Activités</span>
+      </a>
+      {% endif %}
+      {% if request.endpoint != 'auth.profil' %}
+      <a href="{{ url_for('auth.profil') }}">
+        <i class="fas fa-cog"></i><span>Paramètres</span>
+      </a>
+      {% endif %}
+      {% endif %}
+    </div>
+    {% endif %}
+
   </body>
 </html>

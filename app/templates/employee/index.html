@@ -9,7 +9,7 @@
         <p class="mb-0 text-white-50 small">{{ now().strftime('%d %B %Y') }}</p>
       </div>
       <div class="col-4 text-end">
-        <i class="fas fa-mortar-pestle welcome-icon"></i>
+        <i class="fas fa-clinic-medical welcome-icon"></i>
       </div>
     </div>
   </div>
@@ -52,30 +52,10 @@
     </div>
   </div>
 
-  <div class="row g-2 g-md-3 mb-4">
-    <div class="col-6">
-      <a href="{{ url_for('sales.sales_interface') }}" class="quick-card">
-        <div class="quick-card-icon bg-success"><i class="fas fa-cart-plus"></i></div>
-        <span>Nouvelle vente</span>
-      </a>
-    </div>
-    <div class="col-6">
-      <a href="{{ url_for('employee.medicines') }}" class="quick-card">
-        <div class="quick-card-icon bg-primary"><i class="fas fa-pills"></i></div>
-        <span>Médicaments</span>
-      </a>
-    </div>
-    <div class="col-6">
-      <a href="{{ url_for('employee.activities') }}" class="quick-card">
-        <div class="quick-card-icon bg-info"><i class="fas fa-history"></i></div>
-        <span>Activités</span>
-      </a>
-    </div>
-    <div class="col-6">
-      <a href="{{ url_for('employee.report') }}" class="quick-card">
-        <div class="quick-card-icon bg-warning"><i class="fas fa-file-excel"></i></div>
-        <span>Rapport</span>
-      </a>
+  <div class="card mb-4">
+    <div class="card-header"><i class="fas fa-chart-line"></i> Évolution de vos ventes (7 jours)</div>
+    <div class="card-body">
+      <canvas id="salesChart" height="200"></canvas>
     </div>
   </div>
 
@@ -85,7 +65,7 @@
       <a href="{{ url_for('employee.medicines') }}" class="btn btn-light btn-sm py-1">Voir tout</a>
     </div>
     <div class="card-body p-0">
-      <div class="table-responsive" style="max-height: 280px; overflow-y: auto;">
+      <div class="table-responsive" style="max-height: 220px; overflow-y: auto;">
         <table class="table mb-0">
           <thead>
             <tr>
@@ -110,4 +90,38 @@
     </div>
   </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  fetch('{{ url_for("employee.api_sales_evolution") }}')
+    .then(r => r.json())
+    .then(data => {
+      new Chart(document.getElementById('salesChart'), {
+        type: 'line',
+        data: {
+          labels: data.map(d => d.date),
+          datasets: [{
+            label: 'Ventes (FC)',
+            data: data.map(d => d.amount),
+            borderColor: '#198754',
+            backgroundColor: 'rgba(25,135,84,0.1)',
+            tension: 0.4,
+            fill: true,
+            pointRadius: 4,
+            pointBackgroundColor: '#198754'
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: true,
+          plugins: { legend: { display: false } },
+          scales: { y: { beginAtZero: true, ticks: { font: { size: 10 } } } }
+        }
+      });
+    });
+});
+</script>
 {% endblock %}

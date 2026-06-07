@@ -1,18 +1,28 @@
 {% extends "base.html" %}
-{% block title %}Mon Profil - AssurancePharma{% endblock %}
+{% block title %}Paramètres - AssurancePharma{% endblock %}
 {% block content %}
 <div class="fade-in">
-  <h1 class="page-title"><i class="fas fa-user-circle"></i> Mon Profil</h1>
+  <h1 class="page-title"><i class="fas fa-cog"></i> Paramètres</h1>
 
   <div class="row justify-content-center">
     <div class="col-md-6">
       <div class="card text-center">
         <div class="card-body">
+          <form id="photoForm" method="POST" enctype="multipart/form-data">
+            <input type="hidden" name="action" value="photo">
+            <input type="file" name="photo" id="photoInput" accept="image/*" style="display:none" onchange="document.getElementById('photoForm').submit()">
+          </form>
           <div class="mb-3">
             {% if current_user.photo %}
-            <img src="{{ url_for('static', filename='uploads/' + current_user.photo) }}" alt="Photo" class="rounded-circle" style="width:150px;height:150px;object-fit:cover;border:4px solid var(--primary);">
+            <div class="profile-photo-wrap" onclick="document.getElementById('photoInput').click()">
+              <img src="{{ url_for('static', filename='uploads/' + current_user.photo) }}" alt="Photo" class="rounded-circle" style="width:150px;height:150px;object-fit:cover;border:4px solid var(--primary);">
+              <div class="photo-overlay"><i class="fas fa-camera"></i></div>
+            </div>
             {% else %}
-            <i class="fas fa-user-circle" style="font-size:150px;color:var(--primary);"></i>
+            <div class="profile-photo-wrap" onclick="document.getElementById('photoInput').click()">
+              <i class="fas fa-user-circle" style="font-size:150px;color:var(--primary);"></i>
+              <div class="photo-overlay"><i class="fas fa-camera"></i></div>
+            </div>
             {% endif %}
           </div>
           <h4>{{ current_user.prenom }} {{ current_user.nom }}</h4>
@@ -23,16 +33,6 @@
               <span class="badge bg-info">{{ current_user.fonction }}</span>
             {% endif %}
           </p>
-
-          <hr>
-          <form method="POST" enctype="multipart/form-data" class="text-start">
-            <input type="hidden" name="action" value="photo">
-            <div class="mb-3">
-              <label class="form-label">Changer la photo</label>
-              <input type="file" name="photo" class="form-control" accept="image/*">
-            </div>
-            <button type="submit" class="btn btn-primary w-100"><i class="fas fa-upload"></i> Uploader</button>
-          </form>
         </div>
       </div>
 
@@ -89,6 +89,15 @@
             </div>
             <button type="submit" class="btn btn-warning w-100"><i class="fas fa-save"></i> Modifier le mot de passe</button>
           </form>
+        </div>
+      </div>
+
+      <div class="card mt-3 border-danger">
+        <div class="card-header bg-danger"><i class="fas fa-sign-out-alt"></i> Session</div>
+        <div class="card-body">
+          <a href="{{ url_for('auth.logout') }}" class="btn btn-outline-danger w-100">
+            <i class="fas fa-sign-out-alt"></i> Déconnexion
+          </a>
         </div>
       </div>
     </div>

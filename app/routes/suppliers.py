@@ -44,9 +44,14 @@ def create_supplier():
                 flash(error, 'error')
             return redirect(url_for('suppliers.create_supplier'))
         
+        nom = data.get('nom', '').strip()
+        if Supplier.query.filter_by(nom=nom, gerant_id=current_user.effective_gerant_id).first():
+            flash(f'Le fournisseur "{nom}" existe déjà.', 'error')
+            return redirect(url_for('suppliers.create_supplier'))
+        
         try:
             supplier = Supplier(
-                nom=data.get('nom'),
+                nom=nom,
                 telephone=data.get('telephone', ''),
                 email=data.get('email', ''),
                 adresse=data.get('adresse', ''),
@@ -87,8 +92,14 @@ def edit_supplier(supplier_id):
     if request.method == 'POST':
         data = request.form.to_dict()
         
+        new_nom = data.get('nom', '').strip()
+        if new_nom != supplier.nom:
+            if Supplier.query.filter_by(nom=new_nom, gerant_id=current_user.effective_gerant_id).first():
+                flash(f'Le fournisseur "{new_nom}" existe déjà.', 'error')
+                return redirect(url_for('suppliers.edit_supplier', supplier_id=supplier.id))
+
         try:
-            supplier.nom = data.get('nom')
+            supplier.nom = new_nom
             supplier.telephone = data.get('telephone', '')
             supplier.email = data.get('email', '')
             supplier.adresse = data.get('adresse', '')

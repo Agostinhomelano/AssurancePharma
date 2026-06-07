@@ -132,16 +132,29 @@
     if (!cart.length) return;
     const btn = document.getElementById('checkoutBtn');
     btn.disabled = true; btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
-    fetch('{{ url_for("sales.api_create_sale") }}', {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({items: cart.map(i=>({medicine_id:i.id, quantity:i.quantity})), payment_method: document.getElementById('paymentMethod').value})
-    }).then(r=>r.json()).then(d=>{
-      if (d.success) { alert('Vente enregistrée !'); cart=[]; renderCart(); location.reload(); }
-      else alert('Erreur: '+d.error);
-    }).catch(e=>alert('Erreur: '+e.message)).finally(()=>{
-      btn.disabled=false; btn.innerHTML='<i class="fas fa-check"></i> Valider';
+    const pm = document.getElementById('paymentMethod').value;
+    let completed = 0, errors = [], sent = 0;
+    cart.forEach(item => {
+      fetch('{{ url_for("sales.api_create_sale") }}', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({items: [{medicine_id: item.id, quantity: item.quantity}], payment_method: pm})
+      }).then(r=>r.json()).then(d=>{
+        if (d.success) completed++;
+        else errors.push(item.name + ': ' + d.error);
+      }).catch(e=>errors.push(item.name + ': ' + e.message))
+      .finally(() => {
+        if (++sent === cart.length) finishCheckout(completed, errors);
+      });
     });
+  }
+  function finishCheckout(completed, errors) {
+    const btn = document.getElementById('checkoutBtn');
+    let msg = completed + ' vente' + (completed > 1 ? 's' : '') + ' enregistrée' + (completed > 1 ? 's' : '');
+    if (errors.length) msg += ', ' + errors.length + ' erreur(s)';
+    alert(msg);
+    cart = []; renderCart();
+    location.reload();
   }
 </script>
 {% endblock %}
