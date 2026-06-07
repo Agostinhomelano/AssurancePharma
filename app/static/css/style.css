@@ -501,7 +501,6 @@ body {
   .welcome-icon { font-size: 1.8rem; }
   .quick-card { padding: 12px; border-radius: 12px; font-size: 0.82rem; }
   .quick-card-icon { width: 34px; height: 34px; font-size: 0.9rem; }
-  .brand-text { display: none; }
 }
 
 @media (min-width: 992px) {

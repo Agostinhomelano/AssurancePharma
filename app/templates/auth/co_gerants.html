@@ -7,6 +7,9 @@
     <a href="{{ url_for('auth.create_co_gerant') }}" class="btn btn-success btn-sm"><i class="fas fa-plus"></i> Nouveau</a>
   </div>
 
+  <div class="mb-3">
+    <input type="text" id="searchInput" class="form-control form-control-sm" placeholder="Rechercher un co-gérant..." oninput="filterTable(this.value)">
+  </div>
   <div class="card">
     <div class="card-body p-0">
       <div class="table-responsive">
@@ -50,9 +53,17 @@
             </tr>
             {% endfor %}
           </tbody>
-        </table>
-      </div>
+      </table>
     </div>
   </div>
 </div>
+<script>
+function filterTable(val) {
+  const rows = document.querySelectorAll('.table tbody tr');
+  const q = val.toLowerCase();
+  rows.forEach(r => {
+    r.style.display = r.textContent.toLowerCase().includes(q) ? '' : 'none';
+  });
+}
+</script>
 {% endblock %}

@@ -17,7 +17,6 @@ medicines_bp = Blueprint('medicines', __name__, url_prefix='/medicines')
 @gerant_required
 def list_medicines():
     """Liste tous les médicaments"""
-    page = request.args.get('page', 1, type=int)
     search = request.args.get('search', '')
     
     query = Medicine.query.filter_by(gerant_id=current_user.effective_gerant_id)
@@ -25,8 +24,9 @@ def list_medicines():
     if search:
         query = query.filter(Medicine.nom.ilike(f'%{search}%'))
     
-    medicines = query.paginate(page=page, per_page=20)
-    return render_template('medicines/list.html', medicines=medicines, search=search)
+    medicines = query.order_by(Medicine.nom).all()
+    categories = Category.query.filter_by(gerant_id=current_user.effective_gerant_id).order_by(Category.nom).all()
+    return render_template('medicines/list.html', medicines=medicines, search=search, categories=categories)
 
 @medicines_bp.route('/api/list')
 @login_required

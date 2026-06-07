@@ -9,6 +9,9 @@
     </a>
   </div>
 
+  <div class="mb-2">
+    <input type="text" id="searchInput" class="form-control form-control-sm" placeholder="Rechercher une activité..." oninput="filterList(this.value)">
+  </div>
   <div class="card">
     <div class="card-header d-flex justify-content-between align-items-center">
       <span><i class="fas fa-calendar-day"></i> {{ today.strftime('%d %B %Y') }}</span>
@@ -43,7 +46,17 @@
         <p class="text-muted mb-0">Aucune activité aujourd'hui</p>
       </div>
       {% endif %}
+      </div>
     </div>
   </div>
 </div>
+<script>
+function filterList(val) {
+  const items = document.querySelectorAll('.list-group-item');
+  const q = val.toLowerCase();
+  items.forEach(r => {
+    r.style.display = r.textContent.toLowerCase().includes(q) ? '' : 'none';
+  });
+}
+</script>
 {% endblock %}

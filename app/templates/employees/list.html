@@ -9,6 +9,9 @@
     </a>
   </div>
 
+  <div class="mb-2">
+    <input type="text" id="searchInput" class="form-control form-control-sm" placeholder="Rechercher un employé..." oninput="filterTable(this.value)">
+  </div>
   <div class="card">
     <div class="card-body p-0 p-md-3">
       {% if employees %}
@@ -58,4 +61,13 @@
     </div>
   </div>
 </div>
+<script>
+function filterTable(val) {
+  const rows = document.querySelectorAll('.table tbody tr');
+  const q = val.toLowerCase();
+  rows.forEach(r => {
+    r.style.display = r.textContent.toLowerCase().includes(q) ? '' : 'none';
+  });
+}
+</script>
 {% endblock %}
