@@ -73,38 +73,17 @@ def init_database():
     if User.query.first() is None:
         # Créer l'utilisateur gérant
         gerant = User(
-            email='gerant@pharma.com',
-            nom='Admin',
-            prenom='Gérant',
+            email='agostinhomelano@gmail.com',
+            nom='Odia',
+            prenom='Agostinho',
             role='gerant'
         )
-        gerant.set_password('admin123')
+        mdp=os.getenv('mot_de_passe', 'mdp')  
+        gerant.set_password(mdp)
         
         db.session.add(gerant)
-        db.session.commit()
-        
-        # Créer des employés de test
-        emp1 = Employee(
-            nom='Dupont',
-            prenom='Jean',
-            email='jean.dupont@pharma.com',
-            telephone='+33612345678',
-            fonction='Vendeur',
-            gerant_id=gerant.id
-        )
-        emp1.set_password('emp123')
-        
-        emp2 = Employee(
-            nom='Martin',
-            prenom='Marie',
-            email='marie.martin@pharma.com',
-            telephone='+33687654321',
-            fonction='Vendeur',
-            gerant_id=gerant.id
-        )
-        emp2.set_password('emp123')
-        
-        db.session.add_all([emp1, emp2])
+        db.session.commit()                
+                        
         
         # Créer des catégories par défaut
         default_categories = ['Antalgiques', 'Antibiotiques', 'Vitamines', 'Anti-inflammatoires', 'Antihistaminiques', 'Digestifs']
